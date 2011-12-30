@@ -7,7 +7,7 @@
 # License: BSD Revised
 #
 # This perl module will convert the Slackware/Salix PACKAGES.TXT file
-# to some various database format : CSV,  
+# to some various database format : CSV,
 #
 
 use strict;
@@ -15,64 +15,121 @@ use warnings;
 
 use LWP::Simple;
 
+#
+# Get the PACKAGES.TXT file
+# 
+#
+# Salix
+our $salix_mirror = "http://salix.enialis.net";
+our $arch32 = "i486";
+our $arch64 = "x86_64";
+our $release = "13.37";
+our $pkgtxt = "/tmp/salixPACKAGES.TXT";
+our $url32 = "$salix_mirror/$arch32/$release/PACKAGES.TXT";
+our $url64 = "$salix_mirror/$arch64/$release/PACKAGES.TXT";
+# Slackware
+our $slack_mirror="ftp://ftp.osuosl.org/pub/slackware";
+our $a32 = "slackware-";
+our $a64 = "slackware64-";
+our $slack32url = "$slack_mirror/$a32$release/PACKAGES.TXT";
+our $slack64url = "$slack_mirror/$a64$release/PACKAGES.TXT";
+our $slackpkgtxt = "/tmp/slackwarePACKAGES.TXT";
 
-my $download_mirror = "http://salix.enialis.net";
-my $arch = "i486";
-my $release = "13.37";
-my $pkgtxt = "/tmp/PACKAGES.TXT";
-my $url = "$download_mirror/$arch/$release/PACKAGES.TXT";
-
-sub get_pkgtxt
-{
-	my ($url,$pkgtxt) = @_;
-	mirror($url, $pkgtxt) or die "Error: could not fetch $url\n";
+# Pkgtxt2db->get_file($url,$pkgtxt)
+sub get_file {
+    our ($a,$b) = @_;
+    mirror($a, $b) or die "Error: could not fetch $a\n";
 }
-get_pkgtxt($url,$pkgtxt);
+
+# 
+# make the file an array
+#
+# Salix
+# Pkgtxt2db->salix_data()
+sub salix_data {
+    open F, "<$pkgtxt" or die $!;
+    our @salix_d = <F>;
+    close (F);
+    return @salix_d;
+}
+# Slackware
+# Pkgtxt2db->slack_data()
+sub slack_data {
+    open G, "<$slackpkgtxt" or die $!;
+    our @slack_d = <G>;
+    close (G);
+    return @slack_d;
+}
 
 
-open FILE, "<$pkgtxt" or die $!;
-my @data = <FILE>;
-close (FILE);
-
-my $pname;
-my $plocation;
-my $pdep;
-my $pdesc;
-my $psizec;
-my $psizeu;
+#
+# Make the hash of array database
+our %pkgdb;
 
 sub mkdadb {
-		my $self = shift;
-		my $dbtype = $_;
-		foreach (@data) {
-				chomp $_;
-				if ($_ =~ /^$/){
-						next;
-				}
-				if ($_ =~ /(^PACKAGE NAME:\s\s)(.*)(\.t[glx]z)/) {
-						$pname = $2;
-				}
-				if ($_ =~ /(^PACKAGE LOCATION:\s\s\.)(.*)/) {
-						$plocation = $2;
-				}
-				if ($_ =~ /(^PACKAGE REQUIRED:\s\s)(.*)/) {
-						$pdep = $2;
-				}
-				if ($_ =~ /(^PACKAGE\sSIZE\s\(compressed\):\s\s)(.*)/) {
-						$psizec = $2;
-				}
-				if ($_ =~ /(^PACKAGE\sSIZE\s\(uncompressed\):\s\s)(.*)/) {
-						$psizeu = $2;
-				}
-				else {
-						next;
-				}
-				tocsv();
-		}
-}
-sub tocsv {
-		print "$pname\@$plocation\@$pdep\@$psizec\@$psizeu\n";
+    our $self = shift;
+
+    our @d = salix_data() unless defined(@d);
+    our $pname;
+    our $pkgname;
+   
+    foreach (@d) {
+        chomp $_;
+        if ($_ =~ /^$/){
+            next;
+        }
+        if ($_ =~ /(^PACKAGE NAME:\s\s)(.*)/) {
+            $pname = "$2";
+            $pname =~ /^(.*)-([^-]*)-([^-]*)-([^-]*).t[glx]z$/;
+            $pkgname = "$1";
+            $pkgdb{$pkgname}[0] = "$pname";
+            $pkgdb{$pkgname}[1] = "$2";
+            $pkgdb{$pkgname}[2] = "$3";
+            $pkgdb{$pkgname}[3] = "$4";
+            next;
+        }
+        if ($_ =~ /(^PACKAGE LOCATION:\s\s\.)(.*)/) {
+            $pkgdb{$pkgname}[4] = "$2";
+            next;
+        }
+        if ($_ =~ /(^PACKAGE REQUIRED:\s\s)(.*)/) {
+            $pkgdb{$pkgname}[5] = "$2";
+            next;
+        }
+        if ($_ =~ /(^PACKAGE\sSIZE\s\(compressed\):\s\s)(.*)/) {
+            $pkgdb{$pkgname}[6] = "$2";
+            next;
+        }
+        if ($_ =~ /(^PACKAGE\sSIZE\s\(uncompressed\):\s\s)(.*)/) {
+            $pkgdb{$pkgname}[7] = "$2";
+            next;
+        }
+        else {
+            next;
+        }
+        if (@d = slack_data()) {
+            our %slackdb = %pkgdb;
+            return \%slackdb;
+        } else {
+            return %pkgdb;
+        }
+    }
 }
 
-mkdadb();
+sub test {
+    get_file($url32,$pkgtxt);
+    salix_data();
+    mkdadb();
+}
+test();
+
+# 
+# CSV
+# pkgname version arch release location dep sizeC sizeU
+sub salix2csv {
+    for our $p ( keys %pkgdb ) {
+        print "$p\@$pkgdb{$p}[1]\@$pkgdb{$p}[2]\@$pkgdb{$p}[3]\@$pkgdb{$p}[4]\@$pkgdb{$p}[5]\@$pkgdb{$p}[6]\@$pkgdb{$p}[7]\n";
+    }
+}
+salix2csv();
 
