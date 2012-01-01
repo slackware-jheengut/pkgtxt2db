@@ -1,13 +1,12 @@
-#!/usr/bin/env perl
+package Pkgtxt2db;
+
 #
-# spkg2db.pl
+# Pkgtxt2db.pm
 #
+# This file is part of pkgtxt2db
 # copyright 2011 Frédéric Galusik <fredg~at~salixos~dot~org>
 #
 # License: BSD Revised
-#
-# This perl module will convert the Slackware/Salix PACKAGES.TXT file
-# to some various database format : CSV,
 #
 
 use strict;
@@ -34,6 +33,12 @@ our $a64 = "slackware64-";
 our $slack32url = "$slack_mirror/$a32$release/PACKAGES.TXT";
 our $slack64url = "$slack_mirror/$a64$release/PACKAGES.TXT";
 our $slackpkgtxt = "/tmp/slackwarePACKAGES.TXT";
+
+sub new {
+    my $self = {};
+    bless ($self);
+    return $self;
+}
 
 # Pkgtxt2db->get_file($url,$pkgtxt)
 sub get_file {
@@ -116,20 +121,37 @@ sub mkdadb {
     }
 }
 
-sub test {
-    get_file($url32,$pkgtxt);
-    salix_data();
-    mkdadb();
-}
-test();
-
 # 
 # CSV
-# pkgname version arch release location dep sizeC sizeU
-sub salix2csv {
-    for our $p ( keys %pkgdb ) {
-        print "$p\@$pkgdb{$p}[1]\@$pkgdb{$p}[2]\@$pkgdb{$p}[3]\@$pkgdb{$p}[4]\@$pkgdb{$p}[5]\@$pkgdb{$p}[6]\@$pkgdb{$p}[7]\n";
+#
+sub s2csv {
+    open(SACSV, ">pkgtxt.csv");
+    my $c = "\t";
+    print SACSV "pkgname${c}pkgver${c}arch${c}pkgrel${c}location${c}dep${c}sizeC${c}sizeU\n";
+    for my $p ( sort keys %pkgdb ) {
+        printf SACSV "%s$c%s$c%s$c%s$c%s$c%s$c%s$c%s\n",
+        $p, $pkgdb{$p}[1], $pkgdb{$p}[2], $pkgdb{$p}[3], $pkgdb{$p}[4], $pkgdb{$p}[5], $pkgdb{$p}[6], $pkgdb{$p}[7];
     }
+    close (SACSV);
 }
-salix2csv();
 
+sub s2json {
+    open(SAJSON, ">pkgtxt.json");
+    print SAJSON "\[\n";
+    for my $p ( keys %pkgdb ) {
+        print SAJSON "  \{\n";
+        print SAJSON "    \"pkgname\": \"$p\",\n";
+        print SAJSON "    \"pkgver\": \"$pkgdb{$p}[1]\",\n";
+        print SAJSON "    \"arch\": \"$pkgdb{$p}[2]\",\n";
+        print SAJSON "    \"pkgver\": \"$pkgdb{$p}[3]\",\n";
+        print SAJSON "    \"location\": \"$pkgdb{$p}[4]\",\n";
+        print SAJSON "    \"dep\": \"$pkgdb{$p}[5]\",\n";
+        print SAJSON "    \"sizeC\": \"$pkgdb{$p}[6]\",\n";
+        print SAJSON "    \"sizeU\": \"$pkgdb{$p}[7]\"\n";
+        print SAJSON "  \},\n";
+    }
+    print SAJSON "\]\n";
+    close (SAJSON);
+}
+
+1;
