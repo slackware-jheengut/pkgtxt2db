@@ -1,0 +1,73 @@
+#!/usr/bin/env perl
+#
+# pkgtxt2db.pl
+#
+# copyright 2012 Frédéric Galusik <fredg~at~salixos~dot~org>
+#
+# License: BSD Revised
+#
+# Convert the Slackware/Salix PACKAGES.TXT file some various database
+# formats : CSV, json, 
+#
+
+use strict;
+use warnings;
+
+use Getopt::Long;
+use Pkgtxt2db;
+
+my $VERSION = 0.0;
+
+my $Pkgtxt2db = Pkgtxt2db->new();
+
+#
+# help - usage
+#
+sub usage {
+    print "Usage: $0 [options]\n\n";
+    print "Options:\n";
+    print " -c | --csv\t\tconvert to a CSV database\n";
+    print " -j | --json\t\tconvert to a JSON database\n";
+    print " -h | --help\t\tprint this message\n";
+    print " -v | --version\t\tprint pkgtxt2db version\n";
+    exit 0;
+}
+
+#
+# CLI options
+#
+my $version;
+my $help;
+my $scsv;
+my $sjson;
+
+GetOptions(
+    'version'      =>  \$version,
+    'help'         =>  \&usage,
+    'csv'          =>  \$scsv,
+    'json'         =>  \$sjson,
+    );
+if ($version) {
+    print "Pkgtxt2db, version $VERSION\n";
+    print "Copyright 2011-2012 Frédéric Galusik\n";
+    print "http://www.salixos.org/wiki/index.php/Pkgtxt2db\n";
+    exit 0;
+    }
+if ($scsv) {
+    Pkgtxt2db->get_file($Pkgtxt2db::url32,$Pkgtxt2db::pkgtxt);
+    Pkgtxt2db->salix_data();
+    Pkgtxt2db->mkdadb();
+    Pkgtxt2db->s2csv();
+    exit 0;
+    }
+if ($sjson) {
+    Pkgtxt2db->get_file($Pkgtxt2db::url32,$Pkgtxt2db::pkgtxt);
+    Pkgtxt2db->salix_data();
+    Pkgtxt2db->mkdadb();
+    Pkgtxt2db->s2json();
+    exit 0;
+    }
+else {
+    die "Wrong usage, run pkgtxt2db --help for information.\n";
+}  
+
