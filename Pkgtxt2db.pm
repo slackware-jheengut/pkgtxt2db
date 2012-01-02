@@ -125,33 +125,50 @@ sub mkdadb {
 # CSV
 #
 sub s2csv {
-    open(SACSV, ">pkgtxt.csv");
+    open(C, ">pkgtxt.csv") or die "Unable to open pkgtxt.csv for writing, aborting.";
     my $c = "\t";
-    print SACSV "pkgname${c}pkgver${c}arch${c}pkgrel${c}location${c}dep${c}sizeC${c}sizeU\n";
+    print C "pkgname${c}pkgver${c}arch${c}pkgrel${c}location${c}dep${c}sizeC${c}sizeU\n";
     for my $p ( sort keys %pkgdb ) {
-        printf SACSV "%s$c%s$c%s$c%s$c%s$c%s$c%s$c%s\n",
+        printf C "%s$c%s$c%s$c%s$c%s$c%s$c%s$c%s\n",
         $p, $pkgdb{$p}[1], $pkgdb{$p}[2], $pkgdb{$p}[3], $pkgdb{$p}[4], $pkgdb{$p}[5], $pkgdb{$p}[6], $pkgdb{$p}[7];
     }
-    close (SACSV);
+    close (C);
 }
 
+#
+# JSON
+#
 sub s2json {
-    open(SAJSON, ">pkgtxt.json");
-    print SAJSON "\[\n";
-    for my $p ( keys %pkgdb ) {
-        print SAJSON "  \{\n";
-        print SAJSON "    \"pkgname\": \"$p\",\n";
-        print SAJSON "    \"pkgver\": \"$pkgdb{$p}[1]\",\n";
-        print SAJSON "    \"arch\": \"$pkgdb{$p}[2]\",\n";
-        print SAJSON "    \"pkgver\": \"$pkgdb{$p}[3]\",\n";
-        print SAJSON "    \"location\": \"$pkgdb{$p}[4]\",\n";
-        print SAJSON "    \"dep\": \"$pkgdb{$p}[5]\",\n";
-        print SAJSON "    \"sizeC\": \"$pkgdb{$p}[6]\",\n";
-        print SAJSON "    \"sizeU\": \"$pkgdb{$p}[7]\"\n";
-        print SAJSON "  \},\n";
+    my $out = "pkgtxt.json";
+    my $n = keys %pkgdb;
+    open(J, ">$out") or die "Unable to open $out for writing, aborting.";
+    print J "\[\n"; 
+    for my $p ( (keys %pkgdb)[0..($n-2)] ) {
+        print J "  \{\n";
+        print J "    \"pkgname\": \"$p\",\n";
+        print J "    \"pkgver\": \"$pkgdb{$p}[1]\",\n";
+        print J "    \"arch\": \"$pkgdb{$p}[2]\",\n";
+        print J "    \"pkgver\": \"$pkgdb{$p}[3]\",\n";
+        print J "    \"location\": \"$pkgdb{$p}[4]\",\n";
+        print J "    \"dep\": \"$pkgdb{$p}[5]\",\n";
+        print J "    \"sizeC\": \"$pkgdb{$p}[6]\",\n";
+        print J "    \"sizeU\": \"$pkgdb{$p}[7]\"\n";
+        print J "  \},\n";
     }
-    print SAJSON "\]\n";
-    close (SAJSON);
+    for my $p ( (keys %pkgdb)[($n-1)] ) {
+        print J "  \{\n";
+        print J "    \"pkgname\": \"$p\",\n";
+        print J "    \"pkgver\": \"$pkgdb{$p}[1]\",\n";
+        print J "    \"arch\": \"$pkgdb{$p}[2]\",\n";
+        print J "    \"pkgver\": \"$pkgdb{$p}[3]\",\n";
+        print J "    \"location\": \"$pkgdb{$p}[4]\",\n";
+        print J "    \"dep\": \"$pkgdb{$p}[5]\",\n";
+        print J "    \"sizeC\": \"$pkgdb{$p}[6]\",\n";
+        print J "    \"sizeU\": \"$pkgdb{$p}[7]\"\n";
+        print J "  \}\n";
+    }
+    print J "\]\n";
+    close (J);
 }
 
 1;
