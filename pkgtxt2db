@@ -26,8 +26,16 @@ my $Pkgtxt2db = Pkgtxt2db->new();
 sub usage {
     print "Usage: $0 [options]\n\n";
     print "Options:\n";
-    print " -c | --csv\t\tconvert to a CSV database\n";
-    print " -j | --json\t\tconvert to a JSON database\n";
+    print " -a | --asc32\t\tconvert Salix PACKAGES.TXT to a CSV DB\n";
+    print " -b | --bsc64\t\tconvert Salix64 PACKAGES.TXT to a CSV DB\n";
+    print " -c | --cslc32\t\tconvert Slackware PACKAGES.TXT to a CSV DB\n";
+    print " -d | --dslc64\t\tconvert Slackware64 PACKAGES.TXT to a CSV DB\n";
+    print "\n";
+    print " -e | --esj32\t\tconvert Salix PACKAGES.TXT to a JSON DB\n";
+    print " -f | --fsj64\t\tconvert Salix64 PACKAGES.TXT to a JSON DB\n";
+    print " -g | --gslj32\t\tconvert Slackware PACKAGES.TXT to a JSON DB\n";
+    print " -i | --islj64\t\tconvert Slackware64 PACKAGES.TXT to a JSON DB\n";
+    print "\n"; 
     print " -h | --help\t\tprint this message\n";
     print " -v | --version\t\tprint pkgtxt2db version\n";
     exit 0;
@@ -38,14 +46,29 @@ sub usage {
 #
 my $version;
 my $help;
-my $scsv;
-my $sjson;
+
+my $salix32csv;
+my $salix64csv;
+my $slack32csv;
+my $slack64csv;
+
+my $salix32json;
+my $salix64json;
+my $slack32json;
+my $slack64json;
+
 
 GetOptions(
-    'version'      =>  \$version,
-    'help'         =>  \&usage,
-    'csv'          =>  \$scsv,
-    'json'         =>  \$sjson,
+    'version'    =>  \$version,
+    'help'       =>  \&usage,
+    'asc32'      =>  \$salix32csv,
+    'bsc64'      =>  \$salix64csv,
+    'cslc32'     =>  \$slack32csv,
+    'dslc64'     =>  \$slack64csv,
+    'esj32'      =>  \$salix32json,
+    'fsj64'      =>  \$salix64json,
+    'gslj32'     =>  \$slack32json,
+    'islj64'     =>  \$slack64json,
     );
 if ($version) {
     print "Pkgtxt2db, version $VERSION\n";
@@ -53,20 +76,54 @@ if ($version) {
     print "http://www.salixos.org/wiki/index.php/Pkgtxt2db\n";
     exit 0;
     }
-if ($scsv) {
-    Pkgtxt2db->get_file($Pkgtxt2db::url32,$Pkgtxt2db::pkgtxt);
-    Pkgtxt2db->salix_data();
-    Pkgtxt2db->mkdadb();
-    Pkgtxt2db->s2csv();
+if ($salix32csv) {
+    Pkgtxt2db->getsalix_d32();
+    Pkgtxt2db->mkdasalixdb();
+    Pkgtxt2db->salix2csv();
     exit 0;
     }
-if ($sjson) {
-    Pkgtxt2db->get_file($Pkgtxt2db::url32,$Pkgtxt2db::pkgtxt);
-    Pkgtxt2db->salix_data();
-    Pkgtxt2db->mkdadb();
-    Pkgtxt2db->s2json();
+if ($salix64csv) {
+    Pkgtxt2db->getsalix_d64();
+    Pkgtxt2db->mkdasalixdb();
+    Pkgtxt2db->salix2csv();
     exit 0;
     }
+if ($slack32csv) {
+    Pkgtxt2db->getslack_d32();
+    Pkgtxt2db->mkdaslackdb();
+    Pkgtxt2db->slack2csv();
+    exit 0;
+    }
+if ($slack64csv) {
+    Pkgtxt2db->getslack_d64();
+    Pkgtxt2db->mkdaslackdb();
+    Pkgtxt2db->slack2csv();
+    exit 0;
+    }
+if ($salix32json) {
+    Pkgtxt2db->getsalix_d32();
+    Pkgtxt2db->mkdasalixdb();
+    Pkgtxt2db->salix2json();
+    exit 0;
+    }
+if ($salix64json) {
+    Pkgtxt2db->getsalix_d64();
+    Pkgtxt2db->mkdasalixdb();
+    Pkgtxt2db->salix2json();
+    exit 0;
+    }
+if ($slack32json) {
+    Pkgtxt2db->getslack_d32();
+    Pkgtxt2db->mkdaslackdb();
+    Pkgtxt2db->slack2json();
+    exit 0;
+    }
+if ($slack64json) {
+    Pkgtxt2db->getslack_d64();
+    Pkgtxt2db->mkdaslackdb();
+    Pkgtxt2db->slack2json();
+    exit 0;
+    } 
 else {
     die "Wrong usage, run pkgtxt2db --help for information.\n";
 }  
