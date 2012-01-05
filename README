@@ -1,0 +1,15 @@
+Pkgtxt2db is a utility for Slackware and Slackware based operating system only.
+
+It can be use to convert PACKAGES.TXT to various database formats:
+Are supported:  - CSV
+                - JSON
+
+
+Download:
+---------
+Sources tarballs and Slackware packages can be found there:
+http://people.salixos.org/fredg/packages/Pkgtxt2db/
+
+SVN:
+----
+svn co https://salix.svn.sourceforge.net/svnroot/salix/Pkgtxt2db/ Pkgtxt2db 
