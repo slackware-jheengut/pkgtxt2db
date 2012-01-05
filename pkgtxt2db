@@ -14,9 +14,9 @@ use strict;
 use warnings;
 
 use Getopt::Long;
-use Pkgtxt2db;
+use Pkgtxt2db::Pkgtxt2db;
 
-my $VERSION = 0.0;
+my $VERSION = 0.1;
 
 my $Pkgtxt2db = Pkgtxt2db->new();
 
