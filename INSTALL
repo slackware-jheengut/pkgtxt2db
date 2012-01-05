@@ -1,0 +1,25 @@
+============
+INSTALLATION
+============
+
+
+To install, run as root:
+
+ ./install.sh
+
+
+Optionnaly, you can set DESTDIR to suit your need, for example:
+DESTDIR=$PKG ./install.sh
+Where $PKG can be /what/you/want
+
+You can set the LIBDIRSUFFIX to install it on a 64bits OS.
+LIBDIRSUFFIX=64 ./install.sh
+
+
+
+NOTE FOR SLACKWARE CURRENT USERS:
+=================================
+Perl version is 5.14.0, so, to install, just do:
+
+PERLVER=5.14.0 ./install.sh
+
