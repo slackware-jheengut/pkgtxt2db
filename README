@@ -12,4 +12,21 @@ http://people.salixos.org/fredg/packages/Pkgtxt2db/
 
 SVN:
 ----
-svn co https://salix.svn.sourceforge.net/svnroot/salix/Pkgtxt2db/ Pkgtxt2db 
+svn co https://salix.svn.sourceforge.net/svnroot/salix/Pkgtxt2db/ Pkgtxt2db
+
+
+------------------------------------------------------------------
+Usage: pkgtxt2db [options]
+
+Options:
+ -a | --asc32       convert Salix PACKAGES.TXT to a CSV DB
+ -b | --bsc64       convert Salix64 PACKAGES.TXT to a CSV DB
+ -c | --cslc32      convert Slackware PACKAGES.TXT to a CSV DB
+ -d | --dslc64      convert Slackware64 PACKAGES.TXT to a CSV DB
+
+ -e | --esj32       convert Salix PACKAGES.TXT to a JSON DB
+ -f | --fsj64       convert Salix64 PACKAGES.TXT to a JSON DB
+ -g | --gslj32      convert Slackware PACKAGES.TXT to a JSON DB
+ -i | --islj64      convert Slackware64 PACKAGES.TXT to a JSON DB
+
+ 
