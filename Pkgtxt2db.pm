@@ -142,6 +142,10 @@ sub mkdasalixdb {
             $pkgdb{$pkgname}[7] = "$2";
             next;
         }
+        if ($_ =~ /\Q${pkgname}\E:(.*)/) {
+            $pkgdb{$pkgname}[8] = $pkgdb{$pkgname}[8] . "\n" . "$1";
+            next;
+        }
         else {
             next;
         }
@@ -193,9 +197,13 @@ sub mkdaslackdb {
             $slackdb{$pkg}[7] = "$2";
             next;
         }
-        else {
+        if ($_ =~ /\Q${pkg}\E:(.*)/) {
+            $slackdb{$pkg}[8] = $slackdb{$pkg}[8] . "\n" . "$1";
             next;
         }
+          else {
+              next;
+          }
             return %slackdb;
     }
 }
@@ -208,7 +216,7 @@ sub salix2csv {
     my $c = "\t";
     print C "pkgname${c}pkgver${c}arch${c}pkgrel${c}location${c}dep${c}sizeC${c}sizeU\n";
     for my $p ( sort keys %pkgdb ) {
-        printf C "%s$c%s$c%s$c%s$c%s$c%s$c%s$c%s\n",
+        printf C "%s$c%s$c%s$c%s$c%s$c%s$c%s$c%s$c%s\n",
         $p, $pkgdb{$p}[1], $pkgdb{$p}[2], $pkgdb{$p}[3], $pkgdb{$p}[4], $pkgdb{$p}[5], $pkgdb{$p}[6], $pkgdb{$p}[7];
     }
     close (C);
@@ -220,7 +228,7 @@ sub slack2csv {
     my $c = "\t";
     print D "pkgname${c}pkgver${c}arch${c}pkgrel${c}location${c}dep${c}sizeC${c}sizeU\n";
     for my $q ( sort keys %slackdb ) {
-        printf D "%s$c%s$c%s$c%s$c%s$c%s$c%s$c%s\n",
+        printf D "%s$c%s$c%s$c%s$c%s$c%s$c%s$c%s$c%s\n",
         $q, $slackdb{$q}[1], $slackdb{$q}[2], $slackdb{$q}[3], $slackdb{$q}[4], $slackdb{$q}[5], $slackdb{$q}[6], $slackdb{$q}[7];
     }
     close (D);
@@ -246,6 +254,7 @@ sub salix2json {
         print J "    \"dep\": \"$pkgdb{$p}[5]\",\n";
         print J "    \"sizeC\": \"$pkgdb{$p}[6]\",\n";
         print J "    \"sizeU\": \"$pkgdb{$p}[7]\"\n";
+        print J "    \"pkgdesc\: \"$pkgdb{$p}[8]\"\n";
         print J "  \},\n";
     }
     for my $p ( (keys %pkgdb)[($n-1)] ) {
@@ -258,6 +267,7 @@ sub salix2json {
         print J "    \"dep\": \"$pkgdb{$p}[5]\",\n";
         print J "    \"sizeC\": \"$pkgdb{$p}[6]\",\n";
         print J "    \"sizeU\": \"$pkgdb{$p}[7]\"\n";
+        print J "    \"pkgdesc\: \"$pkgdb{$p}[8]\"\n";
         print J "  \}\n";
     }
     print J "\]\n";
@@ -280,6 +290,7 @@ sub slack2json {
         print K "    \"dep\": \"$slackdb{$q}[5]\",\n";
         print K "    \"sizeC\": \"$slackdb{$q}[6]\",\n";
         print K "    \"sizeU\": \"$slackdb{$q}[7]\"\n";
+        print K "    \"pkgdesc\": \"$slackdb{$q}[8]\"\n";
         print K "  \},\n";
     }
     for my $q ( (keys %slackdb)[($nb-1)] ) {
@@ -292,6 +303,7 @@ sub slack2json {
         print K "    \"dep\": \"$slackdb{$q}[5]\",\n";
         print K "    \"sizeC\": \"$slackdb{$q}[6]\",\n";
         print K "    \"sizeU\": \"$slackdb{$q}[7]\"\n";
+        print K "    \"pkgdesc\": \"$slackdb{$q}[8]\"\n";
         print K "  \}\n";
     }
     print K "\]\n";
