@@ -8,31 +8,32 @@ package Pkgtxt2db;
 #
 # License: BSD Revised
 #
-
+use 5.010;
 use strict;
 use warnings;
 
 use LWP::Simple;
 
+our $pkgtxt = "PACKAGES.TXT";
+our @releases = ("13.37","current");
+our $release;
+our $url;
+our $target;
+our @targets = qw/salix32 salix64 slack32 slack64/;
+our %pkgdb;
 #
-# Get the PACKAGES.TXT file
-# 
+# Salix vars
 #
-# Salix
+our $salix32 = "salix32";
+our $salix64 = "salix64";
 our $salix_mirror = "http://salix.enialis.net";
-our $arch32 = "i486";
-our $arch64 = "x86_64";
-our $release = "13.37";
-our $pkgtxt = "/tmp/salixPACKAGES.TXT";
-our $url32 = "$salix_mirror/$arch32/$release/PACKAGES.TXT";
-our $url64 = "$salix_mirror/$arch64/$release/PACKAGES.TXT";
-# Slackware
+#
+# Slackware vars
+#
+our $slack32 = "slack32";
+our $slack64 = "slack64";
 our $slack_mirror="http://slackware.org.uk/slackware";
-our $a32 = "slackware";
-our $a64 = "slackware64";
-our $slackurl32 = "$slack_mirror/${a32}-${release}/PACKAGES.TXT";
-our $slackurl64 = "$slack_mirror/${a64}-${release}/PACKAGES.TXT";
-our $slackpkgtxt = "/tmp/slackwarePACKAGES.TXT";
+#
 
 sub new {
     my $self = {};
@@ -40,77 +41,77 @@ sub new {
     return $self;
 }
 
-# 
+#
+# choose the release
+#
+sub checkrelease {
+    if ($release ~~ @releases) {
+        print "Release: $release\n";
+    } else {
+        die "Not a valid release, see --help\n";
+        }
+    }
+
+#
+# choose the target between salix or slackware, i486 or x86_64
+#
+sub checktarget {
+    if ($target ~~ @targets) {
+        print "Target: $target\n";
+    } else {
+        die "You must choose a valid target, see --help\n";
+    }
+}
+
+#
 # build an array with all file lines
 #
-# Salix
-# Pkgtxt2db->getsalix_d32()
+# Get the PACKAGES.TXT file
+# Pkgtxt2db->getpkgtxt()
 #
-sub getsalix_d32 {
-    my $status = getstore($url32,$pkgtxt);
+sub getpkgtxt {
+    if ($target eq $salix32) {
+        $url = "$salix_mirror/i486/$release/$pkgtxt";
+    } elsif ($target eq $salix64) {
+        $url = "$salix_mirror/x86_64/$release/$pkgtxt";
+    } elsif ($target eq $slack32) {
+        $url = "$slack_mirror/slackware-${release}/$pkgtxt";
+    } elsif ($target eq $slack64) {
+        $url = "$slack_mirror/slackware64-${release}/$pkgtxt";
+    }
+    print "URL: $url\n";
+    my $status = getstore($url,$pkgtxt);
     if ( is_success($status) ) {
         print "PACKAGES.TXT downloaded correctly.\n";
     } else {
         print "PACKAGES.TXT not downloaded: $status\n";
     }
 }
-sub getsalix_d64 {
-    my $status = getstore($url64,$pkgtxt);
-    if ( is_success($status) ) {
-        print "PACKAGES.TXT downloaded correctly.\n";
-    } else {
-        print "PACKAGES.TXT not dowloaded: $status\n";
-    }
-}
 
-sub salix_data {
-    open F, "<$pkgtxt" or die "No Salix PACKAGES.TXT file, aborting.\n";
-    our @salix_d = <F>;
+
+#
+# turn PACKAGES.TXT to a array
+#
+sub getdata {
+    open F, "<$pkgtxt" or die "No PACKAGES.TXT file, aborting.\n";
+    our @data = <F>;
     close (F);
-    return @salix_d;
-}
-
-# Slackware
-# Pkgtxt2db->getslack_d32()
-# 
-sub getslack_d32 {
-    my $status = getstore($slackurl32,$slackpkgtxt);
-    if ( is_success($status) ) {
-        print "PACKAGES.TXT downloaded correctly.\n";
-    } else {
-        print "PACKAGES.TXT not downloaded: $status\n";
-    }
-}
-sub getslack_d64 {
-    my $status = getstore($slackurl64,$slackpkgtxt);
-    if ( is_success($status) ) {
-        print "PACKAGES.TXT downloaded correctly.\n";
-    } else {
-        print "PACKAGES.TXT not downloaded: $status\n";
-    }
-}
-sub slack_data {
-    open G, "<$slackpkgtxt" or die $!;
-    our @slack_d = <G>;
-    close (G);
-    return @slack_d;
+    return @data;
 }
 
 #
 # Make the hash of array database
 #
-# Salix DB
-# Pkgtxt2db->mkdasalixdb()
+# build the DB
+# Pkgtxt2db->mkdadb()
 #
-our %pkgdb;
-
-sub mkdasalixdb {
+sub mkdadb {
     our $self = shift;
 
-    our @d = salix_data();
+    our @d = getdata();
     our $pname;
     our $pkgname;
-   
+
     foreach (@d) {
         chomp $_;
         if ($_ =~ /^$/){
@@ -154,65 +155,12 @@ sub mkdasalixdb {
 }
 
 #
-# Slackware DB
-# Pkgtxt2db->mkdaslackdb()
-#
-our %slackdb;
-
-sub mkdaslackdb {
-    our $self = shift;
-
-    our @da = slack_data();
-    our $name;
-    our $pkg;
-   
-    foreach (@da) {
-        chomp $_;
-        if ($_ =~ /^$/){
-            next;
-        }
-        if ($_ =~ /(^PACKAGE NAME:\s\s)(.*)/) {
-            $name = "$2";
-            $name =~ /^(.*)-([^-]*)-([^-]*)-([^-]*).t[glx]z$/;
-            $pkg = "$1";
-            $slackdb{$pkg}[0] = "$name";
-            $slackdb{$pkg}[1] = "$2";
-            $slackdb{$pkg}[2] = "$3";
-            $slackdb{$pkg}[3] = "$4";
-            next;
-        }
-        if ($_ =~ /(^PACKAGE LOCATION:\s\s\.)(.*)/) {
-            $slackdb{$pkg}[4] = "$2";
-            next;
-        }
-        if ($_ =~ /(^PACKAGE REQUIRED:\s\s)(.*)/) {
-            $slackdb{$pkg}[5] = "$2";
-            next;
-        }
-        if ($_ =~ /(^PACKAGE\sSIZE\s\(compressed\):\s\s)(.*)/) {
-            $slackdb{$pkg}[6] = "$2";
-            next;
-        }
-        if ($_ =~ /(^PACKAGE\sSIZE\s\(uncompressed\):\s\s)(.*)/) {
-            $slackdb{$pkg}[7] = "$2";
-            next;
-        }
-        if ($_ =~ /\Q${pkg}\E:(.*)/) {
-            $slackdb{$pkg}[8] = $slackdb{$pkg}[8] . "\n" . "$1";
-            next;
-        }
-          else {
-              next;
-          }
-            return %slackdb;
-    }
-}
-
-# 
 # CSV
 #
-sub salix2csv {
+sub tocsv {
     open(C, ">pkgtxt.csv") or die "Unable to open pkgtxt.csv for writing, aborting.";
+    # choose the CSV separator, \t = tab \@ = @ ....
+    # avoid the comma (,) as it is the separator for dependancies
     my $c = "\t";
     print C "pkgname${c}pkgver${c}arch${c}pkgrel${c}location${c}dep${c}sizeC${c}sizeU\n";
     for my $p ( sort keys %pkgdb ) {
@@ -220,30 +168,17 @@ sub salix2csv {
         $p, $pkgdb{$p}[1], $pkgdb{$p}[2], $pkgdb{$p}[3], $pkgdb{$p}[4], $pkgdb{$p}[5], $pkgdb{$p}[6], $pkgdb{$p}[7];
     }
     close (C);
-    print "Salix pkgtxt.csv has been built.\n";
+    print "pkgtxt.csv has been built.\n";
 }
-
-sub slack2csv {
-    open(D, ">pkgtxt.csv") or die "Unable to open pkgtxt.csv for writing, aborting.";
-    my $c = "\t";
-    print D "pkgname${c}pkgver${c}arch${c}pkgrel${c}location${c}dep${c}sizeC${c}sizeU\n";
-    for my $q ( sort keys %slackdb ) {
-        printf D "%s$c%s$c%s$c%s$c%s$c%s$c%s$c%s$c%s\n",
-        $q, $slackdb{$q}[1], $slackdb{$q}[2], $slackdb{$q}[3], $slackdb{$q}[4], $slackdb{$q}[5], $slackdb{$q}[6], $slackdb{$q}[7];
-    }
-    close (D);
-    print "Slackware pkgtxt.csv has been built.\n";
-}
-
 
 #
 # JSON
 #
-sub salix2json {
+sub tojson {
     my $out = "pkgtxt.json";
     my $n = keys %pkgdb;
     open(J, ">$out") or die "Unable to open $out for writing, aborting.";
-    print J "\[\n"; 
+    print J "\[\n";
     for my $p ( (keys %pkgdb)[0..($n-2)] ) {
         print J "  \{\n";
         print J "    \"pkgname\": \"$p\",\n";
@@ -272,44 +207,7 @@ sub salix2json {
     }
     print J "\]\n";
     close (J);
-    print "Salix pkgtxt.json has been built.\n";
+    print "pkgtxt.json has been built.\n";
 }
-
-sub slack2json {
-    my $out = "pkgtxt.json";
-    my $nb = keys %slackdb;
-    open(K, ">$out") or die "Unable to open $out for writing, aborting.";
-    print K "\[\n"; 
-    for my $q ( (keys %slackdb)[0..($nb-2)] ) {
-        print K "  \{\n";
-        print K "    \"pkgname\": \"$q\",\n";
-        print K "    \"pkgver\": \"$slackdb{$q}[1]\",\n";
-        print K "    \"arch\": \"$slackdb{$q}[2]\",\n";
-        print K "    \"pkgver\": \"$slackdb{$q}[3]\",\n";
-        print K "    \"location\": \"$slackdb{$q}[4]\",\n";
-        print K "    \"dep\": \"$slackdb{$q}[5]\",\n";
-        print K "    \"sizeC\": \"$slackdb{$q}[6]\",\n";
-        print K "    \"sizeU\": \"$slackdb{$q}[7]\"\n";
-        print K "    \"pkgdesc\": \"$slackdb{$q}[8]\"\n";
-        print K "  \},\n";
-    }
-    for my $q ( (keys %slackdb)[($nb-1)] ) {
-        print K "  \{\n";
-        print K "    \"pkgname\": \"$q\",\n";
-        print K "    \"pkgver\": \"$slackdb{$q}[1]\",\n";
-        print K "    \"arch\": \"$slackdb{$q}[2]\",\n";
-        print K "    \"pkgver\": \"$slackdb{$q}[3]\",\n";
-        print K "    \"location\": \"$slackdb{$q}[4]\",\n";
-        print K "    \"dep\": \"$slackdb{$q}[5]\",\n";
-        print K "    \"sizeC\": \"$slackdb{$q}[6]\",\n";
-        print K "    \"sizeU\": \"$slackdb{$q}[7]\"\n";
-        print K "    \"pkgdesc\": \"$slackdb{$q}[8]\"\n";
-        print K "  \}\n";
-    }
-    print K "\]\n";
-    close (K);
-    print "Slackware pkgtxt.json has been built.\n";
-}
-
 
 1;

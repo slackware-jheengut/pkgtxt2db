@@ -7,16 +7,17 @@
 # License: BSD Revised
 #
 # Convert the Slackware/Salix PACKAGES.TXT file some various database
-# formats : CSV, json, 
+# formats : CSV, json,
 #
 
 use strict;
 use warnings;
 
 use Getopt::Long;
-use Pkgtxt2db::Pkgtxt2db;
+#use Pkgtxt2db::Pkgtxt2db;
+use Pkgtxt2db;
 
-my $VERSION = "0.1.1";
+my $VERSION = "0.1.11";
 
 my $Pkgtxt2db = Pkgtxt2db->new();
 
@@ -26,18 +27,16 @@ my $Pkgtxt2db = Pkgtxt2db->new();
 sub usage {
     print "Usage: $0 [options]\n\n";
     print "Options:\n";
-    print " -a | --asc32\t\tconvert Salix PACKAGES.TXT to a CSV DB\n";
-    print " -b | --bsc64\t\tconvert Salix64 PACKAGES.TXT to a CSV DB\n";
-    print " -c | --cslc32\t\tconvert Slackware PACKAGES.TXT to a CSV DB\n";
-    print " -d | --dslc64\t\tconvert Slackware64 PACKAGES.TXT to a CSV DB\n";
-    print "\n";
-    print " -e | --esj32\t\tconvert Salix PACKAGES.TXT to a JSON DB\n";
-    print " -f | --fsj64\t\tconvert Salix64 PACKAGES.TXT to a JSON DB\n";
-    print " -g | --gslj32\t\tconvert Slackware PACKAGES.TXT to a JSON DB\n";
-    print " -i | --islj64\t\tconvert Slackware64 PACKAGES.TXT to a JSON DB\n";
-    print "\n"; 
+    print " -c | --csv\t\tconvert PACKAGES.TXT to a CSV DB\n";
+    print " -j | --json\t\tconvert PACKAGES.TXT to a JSON DB\n";
+    print " -t | --target\t\tuse with -c or -j, choose slackware or salix\n";
+    print " -r | --release\t\tuse with -t, choose the release\n";
     print " -h | --help\t\tprint this message\n";
     print " -v | --version\t\tprint pkgtxt2db version\n";
+    print "\n";
+    print "See the man page (man pkgtxt2db) for detailed informations.\n";
+    print "\n";
+
     exit 0;
 }
 
@@ -46,29 +45,16 @@ sub usage {
 #
 my $version;
 my $help;
-
-my $salix32csv;
-my $salix64csv;
-my $slack32csv;
-my $slack64csv;
-
-my $salix32json;
-my $salix64json;
-my $slack32json;
-my $slack64json;
-
+my $csv;
+my $json;
 
 GetOptions(
     'version'    =>  \$version,
     'help'       =>  \&usage,
-    'asc32'      =>  \$salix32csv,
-    'bsc64'      =>  \$salix64csv,
-    'cslc32'     =>  \$slack32csv,
-    'dslc64'     =>  \$slack64csv,
-    'esj32'      =>  \$salix32json,
-    'fsj64'      =>  \$salix64json,
-    'gslj32'     =>  \$slack32json,
-    'islj64'     =>  \$slack64json,
+    'release=s'  =>  \$Pkgtxt2db::release,
+    'target=s'   =>  \$Pkgtxt2db::target,
+    'csv'        =>  \$csv,
+    'json'       =>  \$json,
     );
 if ($version) {
     print "Pkgtxt2db, version $VERSION\n";
@@ -76,55 +62,25 @@ if ($version) {
     print "http://www.salixos.org/wiki/index.php/Pkgtxt2db\n";
     exit 0;
     }
-if ($salix32csv) {
-    Pkgtxt2db->getsalix_d32();
-    Pkgtxt2db->mkdasalixdb();
-    Pkgtxt2db->salix2csv();
+if ($csv) {
+    Pkgtxt2db->checktarget();
+    Pkgtxt2db->checkrelease();
+    Pkgtxt2db->getpkgtxt();
+    Pkgtxt2db->mkdadb();
+    Pkgtxt2db->getdata();
+    Pkgtxt2db->tocsv();
     exit 0;
     }
-if ($salix64csv) {
-    Pkgtxt2db->getsalix_d64();
-    Pkgtxt2db->mkdasalixdb();
-    Pkgtxt2db->salix2csv();
+if ($json) {
+    Pkgtxt2db->checktarget();
+    Pkgtxt2db->checkrelease();
+    Pkgtxt2db->getpkgtxt();
+    Pkgtxt2db->mkdadb();
+    Pkgtxt2db->getdata();
+    Pkgtxt2db->tojson();
     exit 0;
-    }
-if ($slack32csv) {
-    Pkgtxt2db->getslack_d32();
-    Pkgtxt2db->mkdaslackdb();
-    Pkgtxt2db->slack2csv();
-    exit 0;
-    }
-if ($slack64csv) {
-    Pkgtxt2db->getslack_d64();
-    Pkgtxt2db->mkdaslackdb();
-    Pkgtxt2db->slack2csv();
-    exit 0;
-    }
-if ($salix32json) {
-    Pkgtxt2db->getsalix_d32();
-    Pkgtxt2db->mkdasalixdb();
-    Pkgtxt2db->salix2json();
-    exit 0;
-    }
-if ($salix64json) {
-    Pkgtxt2db->getsalix_d64();
-    Pkgtxt2db->mkdasalixdb();
-    Pkgtxt2db->salix2json();
-    exit 0;
-    }
-if ($slack32json) {
-    Pkgtxt2db->getslack_d32();
-    Pkgtxt2db->mkdaslackdb();
-    Pkgtxt2db->slack2json();
-    exit 0;
-    }
-if ($slack64json) {
-    Pkgtxt2db->getslack_d64();
-    Pkgtxt2db->mkdaslackdb();
-    Pkgtxt2db->slack2json();
-    exit 0;
-    } 
+    }   
 else {
     die "Wrong usage, run pkgtxt2db --help for information.\n";
-}  
+}
 
