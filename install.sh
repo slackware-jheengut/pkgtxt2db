@@ -5,4 +5,5 @@ PERLDIR=usr/lib${LIBDIRSUFFIX}/perl5/$PERLVER
 
 install -D -m 755 pkgtxt2db $DESTDIR/usr/bin/pkgtxt2db
 install -D -m 644 Pkgtxt2db.pm $DESTDIR/$PERLDIR/Pkgtxt2db/Pkgtxt2db.pm
+install -D -m 644 pkgtxt2db.man $DESTDIR/usr/man/man1/pkgtxt2db.1
 

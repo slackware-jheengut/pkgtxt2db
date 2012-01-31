@@ -1,5 +1,9 @@
+* version 0.1.2
+    - code cleanup
+	- options are now human readable
+	- man page added
 * version 0.1.1
 	- add pkgdesc var (package description) to JSON DB
 * version 0.1
 	- first try
-	- Convert Salix and Slackware PACKAGES.TXT files to CSV and JSON DBi.
+	- Convert Salix and Slackware PACKAGES.TXT files to CSV and JSON DB.

@@ -14,10 +14,10 @@ use strict;
 use warnings;
 
 use Getopt::Long;
-#use Pkgtxt2db::Pkgtxt2db;
-use Pkgtxt2db;
+use Pkgtxt2db::Pkgtxt2db;
+#use Pkgtxt2db;
 
-my $VERSION = "0.1.11";
+my $VERSION = "0.1.2";
 
 my $Pkgtxt2db = Pkgtxt2db->new();
 
@@ -36,7 +36,6 @@ sub usage {
     print "\n";
     print "See the man page (man pkgtxt2db) for detailed informations.\n";
     print "\n";
-
     exit 0;
 }
 
