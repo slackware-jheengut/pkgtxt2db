@@ -1,0 +1,75 @@
+pkgtxt2db
+Frederic Galusik
+%%mtime(%m/%d/%Y)
+
+%!target: man
+%!encoding: utf-8
+
+= NAME =
+
+pkgtxt2db - A perl utility to convert the Slackware PACKAGES.TXT to a database.
+
+Are supported: CSV, JSON
+
+= SYNOPSIS =
+
+**pkgtxt2db** [//OPTIONS//]
+
+
+= DESCRIPTION =
+
+**Pkgtxt2db** is a tool for automoatically convert PACKAGES.TXT from this plain text format to a database one like CSV, JSON.
+
+
+= GENERAL OPTIONS =
+
+: **-h**, **--help**
+Simple help
+
+: **-v**, **--version**
+Print Pkgtxt2db version
+
+: **-c**, **--csv**
+Convert PACKAGES.TXT to a CSV database.
+
+: **-j**, **--json**
+Convert PACKAGES.TXT to a JSON database.
+
+: **-t**, **--target**
+Choose between Slackware or Salix repositories.
+
+It can be:
+- slack32: slackware i486 repository
+- slack64: slackware x86_64 repository
+- salix32: salix i486 repository
+- salix64: salix x86_64 repository
+
+: **-r**, **--release**
+Choose the slackware or salix release.
+
+It can be: current (if exist), 13.37, ...
+
+
+= COMMAND LINE USAGE =
+Here are some usages examples.
+
+: **pkgtxt2db -c -t slack32 -r current**
+It will fetch and convert PACKAGES.TXT from the Slackware current i486
+repository to a CSV database (tab separated): //pkgtxt.csv//.
+You can open it with libreoffice ;)
+
+: **pkgtxt2db -j -t salix64 -r 13.37**
+It will fetch and convert PACKAGES.TXT from the Salix 13.37 x86-64
+repository to a JSON database: //pkgtxt.json//.
+
+
+= WEBSITE =
+
+http://www.salixos.org/wiki/index.php/Pkgtxt2db
+
+
+= AUTHOR =
+
+Pkgtxt2db was written by Frederic Galusik <fredg~at~salixos~dot~org>
+
+
