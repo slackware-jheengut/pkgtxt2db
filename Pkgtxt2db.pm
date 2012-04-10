@@ -143,7 +143,7 @@ sub mkdadb {
             $pkgdb{$pkgname}[7] = "$2";
             next;
         }
-        if ($_ =~ /\Q${pkgname}\E:(.*)/) {
+        if (($_ =~ /\Q${pkgname}\E:(.*)/) && (defined($pkgname))) {
             $pkgdb{$pkgname}[8] = $pkgdb{$pkgname}[8] . "$1";
             next;
         }
