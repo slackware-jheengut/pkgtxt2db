@@ -17,7 +17,7 @@ use Getopt::Long;
 use Pkgtxt2db::Pkgtxt2db;
 #use Pkgtxt2db;
 
-my $VERSION = "0.1.2.1";
+my $VERSION = "0.1.4";
 
 my $Pkgtxt2db = Pkgtxt2db->new();
 
