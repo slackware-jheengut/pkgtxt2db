@@ -158,13 +158,13 @@ sub mkdadb {
 # CSV
 #
 sub tocsv {
-    open(C, ">$target-$release.csv") or die "Unable to open pkgtxt.csv for writing, aborting.";
+    open(C, ">$target-$release.csv") or die "Unable to open $target-$release.csv for writing, aborting.";
     # choose the CSV separator, \t = tab \@ = @ ....
     # avoid the comma (,) as it is the separator for dependancies
-    my $c = "\;";
-    print C "pkgname${c}pkgver${c}arch${c}pkgrel${c}location${c}dep${c}sizeC${c}sizeU${c}Desc\n";
+    my $c = "\"\;\"";
+    print C "\"pkgname${c}pkgver${c}arch${c}pkgrel${c}location${c}dep${c}sizeC${c}sizeU${c}Desc\"\n";
     for my $p ( sort keys %pkgdb ) {
-        printf C "%s$c%s$c%s$c%s$c%s$c%s$c%s$c%s$c%s\n",
+        printf C "\"%s$c%s$c%s$c%s$c%s$c%s$c%s$c%s$c%s\"\n",
         $p, $pkgdb{$p}[1], $pkgdb{$p}[2], $pkgdb{$p}[3], $pkgdb{$p}[4], $pkgdb{$p}[5], $pkgdb{$p}[6], $pkgdb{$p}[7], $pkgdb{$p}[8];
     }
     close (C);
