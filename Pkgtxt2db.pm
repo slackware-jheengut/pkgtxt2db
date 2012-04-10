@@ -158,7 +158,7 @@ sub mkdadb {
 # CSV
 #
 sub tocsv {
-    open(C, ">pkgtxt.csv") or die "Unable to open pkgtxt.csv for writing, aborting.";
+    open(C, ">$target-$release.csv") or die "Unable to open pkgtxt.csv for writing, aborting.";
     # choose the CSV separator, \t = tab \@ = @ ....
     # avoid the comma (,) as it is the separator for dependancies
     my $c = "\;";
@@ -168,14 +168,14 @@ sub tocsv {
         $p, $pkgdb{$p}[1], $pkgdb{$p}[2], $pkgdb{$p}[3], $pkgdb{$p}[4], $pkgdb{$p}[5], $pkgdb{$p}[6], $pkgdb{$p}[7], $pkgdb{$p}[8];
     }
     close (C);
-    print "pkgtxt.csv has been built.\n";
+    print "$target-$release.csv has been built.\n";
 }
 
 #
 # JSON
 #
 sub tojson {
-    my $out = "pkgtxt.json";
+    my $out = "$target-$release.json";
     my $n = keys %pkgdb;
     open(J, ">$out") or die "Unable to open $out for writing, aborting.";
     print J "\[\n";
@@ -207,7 +207,7 @@ sub tojson {
     }
     print J "\]\n";
     close (J);
-    print "pkgtxt.json has been built.\n";
+    print "$target-$release.json has been built.\n";
 }
 
 1;
