@@ -1,3 +1,9 @@
+* version 0.1.4
+	- added pkgdesc to CSV DB
+	- added "" delimiters to CSV, safer for mysql import
+	- remove garbages from the Slackware DB output
+	- fix pkgdesc to be one-line var
+	- added output examples in /examples
 * version 0.1.2
     - code cleanup
 	- options are now human readable
