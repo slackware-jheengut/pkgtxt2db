@@ -14,10 +14,10 @@ use strict;
 use warnings;
 
 use Getopt::Long;
-use Pkgtxt2db::Pkgtxt2db;
-#use Pkgtxt2db;
+#use Pkgtxt2db::Pkgtxt2db;
+use Pkgtxt2db;
 
-my $VERSION = "0.1.4";
+my $VERSION = "0.1.5";
 
 my $Pkgtxt2db = Pkgtxt2db->new();
 
@@ -29,6 +29,7 @@ sub usage {
     print "Options:\n";
     print " -c | --csv\t\tconvert PACKAGES.TXT to a CSV DB\n";
     print " -j | --json\t\tconvert PACKAGES.TXT to a JSON DB\n";
+    print " -x | --xml\t\tconvert PACKAGES.TXT to a XML DB\n";
     print " -t | --target\t\tuse with -c or -j, choose slackware or salix\n";
     print " -r | --release\t\tuse with -t, choose the release\n";
     print " -h | --help\t\tprint this message\n";
@@ -46,6 +47,7 @@ my $version;
 my $help;
 my $csv;
 my $json;
+my $xml;
 
 GetOptions(
     'version'    =>  \$version,
@@ -54,6 +56,7 @@ GetOptions(
     'target=s'   =>  \$Pkgtxt2db::target,
     'csv'        =>  \$csv,
     'json'       =>  \$json,
+    'xml'        =>  \$xml,
     );
 if ($version) {
     print "Pkgtxt2db, version $VERSION\n";
@@ -78,7 +81,16 @@ if ($json) {
     Pkgtxt2db->getdata();
     Pkgtxt2db->tojson();
     exit 0;
-    }   
+    }
+if ($xml) {
+    Pkgtxt2db->checktarget();
+    Pkgtxt2db->checkrelease();
+    Pkgtxt2db->getpkgtxt();
+    Pkgtxt2db->mkdadb();
+    Pkgtxt2db->getdata();
+    Pkgtxt2db->toxml();
+    exit 0;
+    } 
 else {
     die "Wrong usage, run pkgtxt2db --help for information.\n";
 }
