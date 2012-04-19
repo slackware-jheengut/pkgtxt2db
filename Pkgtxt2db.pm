@@ -145,6 +145,8 @@ sub mkdadb {
         }
         if (($_ =~ /\Q${pkgname}\E:(.*)/) && (defined($pkgname))) {
             $pkgdb{$pkgname}[8] = $pkgdb{$pkgname}[8] . "$1";
+            # clean xml
+            $pkgdb{$pkgname}[8] =~ s/&/and/g;
             next;
         }
         else {
