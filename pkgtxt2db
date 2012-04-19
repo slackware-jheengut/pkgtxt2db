@@ -30,7 +30,7 @@ sub usage {
     print " -c | --csv\t\tconvert PACKAGES.TXT to a CSV DB\n";
     print " -j | --json\t\tconvert PACKAGES.TXT to a JSON DB\n";
     print " -x | --xml\t\tconvert PACKAGES.TXT to a XML DB\n";
-    print " -t | --target\t\tuse with -c or -j, choose slackware or salix\n";
+    print " -t | --target\t\tuse with -c, -j or -x, choose slackware or salix\n";
     print " -r | --release\t\tuse with -t, choose the release\n";
     print " -h | --help\t\tprint this message\n";
     print " -v | --version\t\tprint pkgtxt2db version\n";
