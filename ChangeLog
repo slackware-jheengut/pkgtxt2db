@@ -1,3 +1,7 @@
+* version 0.1.6
+	- add XML export
+	- clean pkgdesc var with parasite characters < > " &
+
 * version 0.1.4
 	- added pkgdesc to CSV DB
 	- added "" delimiters to CSV, safer for mysql import
