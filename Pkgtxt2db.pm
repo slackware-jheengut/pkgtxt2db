@@ -210,4 +210,23 @@ sub tojson {
     print "$target-$release.json has been built.\n";
 }
 
+sub toxml {
+    my $outx = "$target-$release.xml";
+    open(X, ">$outx") or die "Unable to open $outx for writing, aborting.";
+    print X "<?xml version=\"1.1\" encoding=\"UTF-8\" ?>\n";
+    print X "<packages>";
+    for my $p (keys %pkgdb) {
+        print X "\t<pkgname>$p</pkgname>\n";
+        print X "\t<pkgver>$pkgdb{$p}[1]</pkgver>\n";
+        print X "\t<arch>$pkgdb{$p}[2]</arch>\n";
+        print X "\t<pkgver>$pkgdb{$p}[3]</pkgver>\n";
+        print X "\t<location>$pkgdb{$p}[4]</location>\n";
+        print X "\t<dep>$pkgdb{$p}[5]</dep>\n";
+        print X "\t<sizeC>$pkgdb{$p}[6]</sizeC>\n";
+        print X "\t<sizeU>$pkgdb{$p}[7]</sizeU>\n";
+        print X "\t<pkgdesc>$pkgdb{$p}[8]</pkgdesc>\n";
+    }
+    print X "</packages>\n";
+}
+
 1;
