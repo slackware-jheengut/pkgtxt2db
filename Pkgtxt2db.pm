@@ -236,6 +236,8 @@ sub toxml {
         print X "\t</package>\n";
     }
     print X "</packages>\n";
+    close (X);
+    print "$target-$release.xml has been built.\n";
 }
 
 1;
