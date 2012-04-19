@@ -213,18 +213,20 @@ sub tojson {
 sub toxml {
     my $outx = "$target-$release.xml";
     open(X, ">$outx") or die "Unable to open $outx for writing, aborting.";
-    print X "<?xml version=\"1.1\" encoding=\"UTF-8\" ?>\n";
-    print X "<packages>";
+    print X "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n";
+    print X "<packages>\n";
     for my $p (keys %pkgdb) {
-        print X "\t<pkgname>$p</pkgname>\n";
-        print X "\t<pkgver>$pkgdb{$p}[1]</pkgver>\n";
-        print X "\t<arch>$pkgdb{$p}[2]</arch>\n";
-        print X "\t<pkgver>$pkgdb{$p}[3]</pkgver>\n";
-        print X "\t<location>$pkgdb{$p}[4]</location>\n";
-        print X "\t<dep>$pkgdb{$p}[5]</dep>\n";
-        print X "\t<sizeC>$pkgdb{$p}[6]</sizeC>\n";
-        print X "\t<sizeU>$pkgdb{$p}[7]</sizeU>\n";
-        print X "\t<pkgdesc>$pkgdb{$p}[8]</pkgdesc>\n";
+        print X "\t<package>\n";
+        print X "\t\t<pkgname>$p</pkgname>\n";
+        print X "\t\t<pkgver>$pkgdb{$p}[1]</pkgver>\n";
+        print X "\t\t<arch>$pkgdb{$p}[2]</arch>\n";
+        print X "\t\t<pkgver>$pkgdb{$p}[3]</pkgver>\n";
+        print X "\t\t<location>$pkgdb{$p}[4]</location>\n";
+        print X "\t\t<dep>$pkgdb{$p}[5]</dep>\n";
+        print X "\t\t<sizeC>$pkgdb{$p}[6]</sizeC>\n";
+        print X "\t\t<sizeU>$pkgdb{$p}[7]</sizeU>\n";
+        print X "\t\t<pkgdesc>$pkgdb{$p}[8]</pkgdesc>\n";
+        print X "\t</package>\n";
     }
     print X "</packages>\n";
 }
