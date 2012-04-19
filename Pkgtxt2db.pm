@@ -161,7 +161,7 @@ sub tocsv {
     open(C, ">$target-$release.csv") or die "Unable to open $target-$release.csv for writing, aborting.";
     # choose the CSV separator, \t = tab \@ = @ ....
     # avoid the comma (,) as it is the separator for dependancies
-    my $c = "\"\;\"";
+    my $c = "\;";
     print C "\"pkgname${c}pkgver${c}arch${c}pkgrel${c}location${c}dep${c}sizeC${c}sizeU${c}Desc\"\n";
     for my $p ( sort keys %pkgdb ) {
         printf C "\"%s$c%s$c%s$c%s$c%s$c%s$c%s$c%s$c%s\"\n",
