@@ -3,6 +3,7 @@ Pkgtxt2db is a utility for Slackware and Slackware based operating system only.
 It can be use to convert PACKAGES.TXT to various database formats:
 Are supported:  - CSV
                 - JSON
+                - XML
 
 
 Download:
@@ -10,23 +11,21 @@ Download:
 Sources tarballs and Slackware packages can be found there:
 http://people.salixos.org/fredg/packages/Pkgtxt2db/
 
-SVN:
+GIT:
 ----
-svn co https://salix.svn.sourceforge.net/svnroot/salix/Pkgtxt2db/ Pkgtxt2db
+git clone ssh://git@github.com/fredg/pkgtxt2db.git
 
 
 ------------------------------------------------------------------
 Usage: pkgtxt2db [options]
 
 Options:
- -a | --asc32       convert Salix PACKAGES.TXT to a CSV DB
- -b | --bsc64       convert Salix64 PACKAGES.TXT to a CSV DB
- -c | --cslc32      convert Slackware PACKAGES.TXT to a CSV DB
- -d | --dslc64      convert Slackware64 PACKAGES.TXT to a CSV DB
-
- -e | --esj32       convert Salix PACKAGES.TXT to a JSON DB
- -f | --fsj64       convert Salix64 PACKAGES.TXT to a JSON DB
- -g | --gslj32      convert Slackware PACKAGES.TXT to a JSON DB
- -i | --islj64      convert Slackware64 PACKAGES.TXT to a JSON DB
+ -c | --csv         convert PACKAGES.TXT to a CSV DB
+ -j | --json        convert PACKAGES.TXT to a JSON DB
+ -x | --xml         convert PACKAGES.TXT to a XML DB
+ -t | --target      use with -c, -j or -x, choose slackware or salix
+ -r | --release     use with -t, choose the release
+ -h | --help        print this message
+ -v | --version     print pkgtxt2db version
 
  
