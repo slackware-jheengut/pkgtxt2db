@@ -100,7 +100,6 @@ def pkgtxturl(a=0, re=0, rl=1, ep=0):
     fout = open(pkgtxt, 'w')
     with gzip.open(pkgtxtz, 'rb') as f:
         for line in f:
-            line.strip()
             fout.write(line)
     fout.close()
 
@@ -219,6 +218,7 @@ def mkdadb(towhat):
                     replace('>', '').\
                     replace('<', '')
             if emptyline and pkg.get("name"):
+                pkg["slackdesc"] = pkg["slackdesc"].strip()
                 towhat(pkg)
                 pkg = new_pkgdct()
     if towhat == tojson:
@@ -231,7 +231,7 @@ def mkdadb(towhat):
 
 def main():
     pkgtxturl()
-    mkdadb(tojson)
+    mkdadb(toxml)
 
 if __name__ == '__main__':
     main()
