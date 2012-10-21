@@ -100,6 +100,7 @@ def pkgtxturl(a=0, re=0, rl=1, ep=0):
     fout = open(pkgtxt, 'w')
     with gzip.open(pkgtxtz, 'rb') as f:
         for line in f:
+            line.strip()
             fout.write(line)
     fout.close()
 
@@ -169,13 +170,13 @@ def mkdadb(towhat):
         if os.path.isfile("packages.json"):
             os.remove("packages.json")
             print "Updating packages.json"
-            with open("packages.json", 'w') as jsonf:
+        with open("packages.json", 'w') as jsonf:
                 jsonf.write('[\n')
     if towhat == toxml:
         if os.path.isfile("packages.xml"):
             os.remove("packages.xml")
             print "Updating packages.xml"
-            with open("packages.xml", 'w') as xmlf:
+        with open("packages.xml", 'w') as xmlf:
                 xmlf.write('<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n')
                 xmlf.write('<packages>\n')
     pkg = new_pkgdct()
@@ -230,7 +231,7 @@ def mkdadb(towhat):
 
 def main():
     pkgtxturl()
-    mkdadb(tocsv)
+    mkdadb(tojson)
 
 if __name__ == '__main__':
     main()
