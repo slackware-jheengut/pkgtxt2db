@@ -17,15 +17,6 @@ git clone ssh://git@github.com/fredg/pkgtxt2db.git
 
 
 ------------------------------------------------------------------
-Usage: pkgtxt2db [options]
+Conversion to Python is in Progress
 
-Options:
- -c | --csv         convert PACKAGES.TXT to a CSV DB
- -j | --json        convert PACKAGES.TXT to a JSON DB
- -x | --xml         convert PACKAGES.TXT to a XML DB
- -t | --target      use with -c, -j or -x, choose slackware or salix
- -r | --release     use with -t, choose the release
- -h | --help        print this message
- -v | --version     print pkgtxt2db version
 
- 
