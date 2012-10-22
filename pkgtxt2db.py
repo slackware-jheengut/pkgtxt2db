@@ -120,17 +120,18 @@ def tojson(pkgDct):
     """
     Export PACKAGES.TXT to a JSON database format
     """
-    with open("packages.json", 'a') as jsonf:
-        jsonf.write('  {\n')
-        jsonf.write('    \"name\": \"' + pkgDct.get("name") + '\",\n')
-        jsonf.write('    \"version\": \"' + pkgDct.get("version") + '\",\n')
-        jsonf.write('    \"arch\": \"' + pkgDct.get("arch") + '\",\n')
-        jsonf.write('    \"release\": \"' + pkgDct.get("release") + '\",\n')
-        jsonf.write('    \"location\": \"' + pkgDct.get("location") + '\",\n')
-        jsonf.write('    \"deps\": \"' + pkgDct.get("deps") + '\",\n')
-        jsonf.write('    \"sizec\": \"' + pkgDct.get("sizec") + '\",\n')
-        jsonf.write('    \"sizeu\": \"' + pkgDct.get("sizeu") + '\",\n')
-        jsonf.write('    \"slackdesc\": \"' + pkgDct.get("slackdesc") + '\",\n')
+    with open("pre.json", 'a') as j:
+        j.write('  {\n')
+        j.write('    \"name\": \"' + pkgDct.get("name") + '\",\n')
+        j.write('    \"version\": \"' + pkgDct.get("version") + '\",\n')
+        j.write('    \"arch\": \"' + pkgDct.get("arch") + '\",\n')
+        j.write('    \"release\": \"' + pkgDct.get("release") + '\",\n')
+        j.write('    \"location\": \"' + pkgDct.get("location") + '\",\n')
+        j.write('    \"deps\": \"' + pkgDct.get("deps") + '\",\n')
+        j.write('    \"sizec\": \"' + pkgDct.get("sizec") + '\",\n')
+        j.write('    \"sizeu\": \"' + pkgDct.get("sizeu") + '\",\n')
+        j.write('    \"slackdesc\": \"' + pkgDct.get("slackdesc") + '\"\n')
+        j.write('  },\n')
 
 
 # to XML DB
@@ -169,8 +170,9 @@ def mkdadb(towhat):
         if os.path.isfile("packages.json"):
             os.remove("packages.json")
             print "Updating packages.json"
-        with open("packages.json", 'w') as jsonf:
-                jsonf.write('[\n')
+        with open("pre.json", 'w') as j:
+                j.write('{\n')
+                j.write('"packages": [\n')
     if towhat == toxml:
         if os.path.isfile("packages.xml"):
             os.remove("packages.xml")
@@ -222,16 +224,21 @@ def mkdadb(towhat):
                 towhat(pkg)
                 pkg = new_pkgdct()
     if towhat == tojson:
-            with open("packages.json", 'a') as jsonf:
-                jsonf.write(']\n')
+        with open("pre.json", 'r') as j, open("packages.json", "w") as jsonf:
+            alllines = j.readlines()
+            alllines[-1] = alllines[-1].replace('},', '}')
+            jsonf.writelines(alllines)
+            jsonf.write(']\n')
+            jsonf.write('}\n')
+            os.remove("pre.json")
     if towhat == toxml:
-            with open("packages.xml", 'a') as xmlf:
-                xmlf.write('</packages>\n')
+        with open("packages.xml", 'a') as xmlf:
+            xmlf.write('</packages>\n')
 
 
 def main():
     pkgtxturl()
-    mkdadb(toxml)
+    mkdadb(tojson)
 
 if __name__ == '__main__':
     main()
