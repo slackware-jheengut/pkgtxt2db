@@ -14,23 +14,17 @@
 
 
 import os
+import sys
 import urllib2
 import gzip
 import re
+import argparse
+
 
 # Program information
 my_url = 'http://www.salixos.org/wiki/index.php/Pkgtxt2db'
 my_name = 'pkgtxt2db'
 my_version = '0.0'
-
-# vars
-mirror = 'http://salix.enialis.net/'
-arch = ['i486/', 'x86_64/']
-rep = ['', 'slackware-']
-release = ['current', '14.0', '13.37', '13.1', '13.0']
-expa = ['/', '/extra/', '/patches/']
-pkgtxtz = 'PACKAGES.TXT.gz'
-pkgtxt = 'PACKAGES.TXT'
 
 # initialise the pkg dictionnary with empty values
 fields = ['name',
@@ -43,39 +37,72 @@ fields = ['name',
              'sizeu',
              'slackdesc']
 
+# Parse the CLI options
+parser = argparse.ArgumentParser(
+        description='Convert PACKAGES.TXT to DB',
+        epilog="ie Pkgtxt2db -t salix -a x86_64 -r 14.0 -o json")
+parser.add_argument('-u', '--update', action="store_true",
+        default=False,
+        help='Download/update the PACKAGES.TXT file')
+parser.add_argument('-t', '--target', action="store",
+        dest='target', default='salix',
+        help='Choose the O.S.: slackware or salix (default) ')
+parser.add_argument('--repo', action="store",
+        dest='repo', default='i486',
+        help='Choose the arch repo: x86_64 or i486 (default)')
+parser.add_argument('-e', '--expa', action="store",
+        dest='expa', default='/',
+        help='Choose the slackware extra/patches')
+parser.add_argument('-r', '--release', action="store",
+        dest='release', default='14.0',
+        help='Choose the release: 13.0 to 14.0 (default)')
+parser.add_argument('-c', '--convert', action="store",
+        dest='convert',
+        help='Choose the DB format: xml, json, csv')
+parser.add_argument('-o', '--output', action="store",
+        dest='output', default='packages',
+        help='Choose the name of your DB file')
+args = parser.parse_args()
+
+# vars
+mirror = 'http://salix.enialis.net/'
+pkgtxtz = 'PACKAGES.TXT.gz'
+pkgtxt = 'PACKAGES.TXT'
+update = args.update
+target = args.target
+repo = args.repo
+release = args.release
+expa = args.expa
+convert = args.convert
+output = args.output
+outputfile = '.'.join([output, convert])
+
 
 def new_pkgdct():
     return dict(zip(fields, ['', ] * len(fields)))
 
 
 # Fetch PACKAGES.TXT
-def pkgtxturl(a=0, re=0, rl=1, ep=0):
+def pkgtxturl(repo='32', target='salix', release='14.0', expa='/'):
     """
-    Download the slackware/salix PACKAGES.TXT.gz from a built URL and unzip it
-
-    pkgtxturl(a, re, rl, ep))
-    pkgtxturl(arch, os, release, extra|patches)
-    -arch i486               : a=0
-    -arch x86_64             : a=1
-    -repository salix        : re=0
-    -repository slackware    : re=1
-    -release current         : rl=0
-    -release 14.0            : rl=1
-    -release 13.37           : rl=2
-    -release 13.1            : rl=3
-    -release 13.0            : rl=4
-    -standard repo           : ep=0
-    -extra slackware repo    : ep=1
-    -patches slackware repo  : ep=2
-
-    examples:
-     -salix i486 14.0        : url(0, 0, 1, 0) (default)
-     -     x86_64            : url(1, 0, 1, 0)
-     -slackware i486 14.0    : url(0, 1, 1, 0)
-     -                extra  : url(0, 1, 1, 1)
-     -                patches: url(0, 1, 1, 2)
+    Download the slackware/salix PACKAGES.TXT.gz from a built URL and unzip it.
+    pkgtxturl(repo, target, release, |extra|patches)
     """
-    url = mirror + arch[a] + rep[re] + release[rl] + expa[ep] + pkgtxtz
+    slash = '/'
+    if target == 'slackware':
+        target = 'slackware-'
+    elif target == 'salix':
+        target = ''
+    else:
+        sys.exit('Choose a valid target, aborting.')
+
+    if expa == 'extra':
+        expa = '/extra/'
+    elif expa == 'patches':
+        expa = '/patches/'
+
+    url = mirror + repo + slash + target + release + expa + pkgtxtz
+
     # remove old files
     if os.path.isfile(pkgtxtz):
         os.remove(pkgtxtz)
@@ -110,7 +137,7 @@ def tocsv(pkgDct, sep=";"):
     Export PACKAGES.TXT to a CSV database format.
     The separated string can be choosen with the sep var, default is ;
     """
-    with open("packages.csv", 'a') as csvf:
+    with open(outputfile, 'a') as csvf:
         csvf.write(
             sep.join(map(lambda field: pkgDct.get(field, ''), fields)) + '\n')
 
@@ -139,7 +166,7 @@ def toxml(pkgDct):
     """
     Export PACKAGES.TXT to a XML database format.
     """
-    with open("packages.xml", 'a') as xmlf:
+    with open(outputfile, 'a') as xmlf:
         xmlf.write('\t<package>\n')
         xmlf.write('\t\t<name>' + pkgDct.get("name") + '</name>\n')
         xmlf.write('\t\t<version>' + pkgDct.get("version") + '</version>\n')
@@ -163,21 +190,21 @@ def mkdadb(towhat):
         - XML  : toxml
     """
     if towhat == tocsv:
-        if os.path.isfile("packages.csv"):
-            os.remove("packages.csv")
-            print "Updating packages.csv"
+        if os.path.isfile(outputfile):
+            os.remove(outputfile)
+            print 'Updating ', outputfile
     if towhat == tojson:
-        if os.path.isfile("packages.json"):
-            os.remove("packages.json")
-            print "Updating packages.json"
+        if os.path.isfile(outputfile):
+            os.remove(outputfile)
+            print 'Updating ', outputfile
         with open("pre.json", 'w') as j:
                 j.write('{\n')
                 j.write('"packages": [\n')
     if towhat == toxml:
-        if os.path.isfile("packages.xml"):
-            os.remove("packages.xml")
-            print "Updating packages.xml"
-        with open("packages.xml", 'w') as xmlf:
+        if os.path.isfile(outputfile):
+            os.remove(outputfile)
+            print 'Updating ', outputfile
+        with open(outputfile, 'w') as xmlf:
                 xmlf.write('<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n')
                 xmlf.write('<packages>\n')
     pkg = new_pkgdct()
@@ -224,7 +251,7 @@ def mkdadb(towhat):
                 towhat(pkg)
                 pkg = new_pkgdct()
     if towhat == tojson:
-        with open("pre.json", 'r') as j, open("packages.json", "w") as jsonf:
+        with open("pre.json", 'r') as j, open(outputfile, "w") as jsonf:
             alllines = j.readlines()
             alllines[-1] = alllines[-1].replace('},', '}')
             jsonf.writelines(alllines)
@@ -232,13 +259,25 @@ def mkdadb(towhat):
             jsonf.write('}\n')
             os.remove("pre.json")
     if towhat == toxml:
-        with open("packages.xml", 'a') as xmlf:
+        with open(outputfile, 'a') as xmlf:
             xmlf.write('</packages>\n')
 
 
 def main():
-    pkgtxturl()
-    mkdadb(tojson)
+    if not update and not os.path.isfile(pkgtxt):
+            sys.exit('No PACKAGES.TXT found, you should fetch one, aborting.')
+    else:
+        pkgtxturl(repo, target, release, expa)
+
+    if convert == 'csv':
+        mkdadb(tocsv)
+    elif convert == 'json':
+        mkdadb(tojson)
+    elif convert == 'xml':
+        mkdadb(toxml)
+    else:
+        sys.exit('You have to choose a valid database format, aborting.')
+
 
 if __name__ == '__main__':
     main()
