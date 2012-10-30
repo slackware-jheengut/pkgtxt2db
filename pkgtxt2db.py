@@ -39,32 +39,45 @@ fields = ['name',
 
 # Parse the CLI options
 parser = argparse.ArgumentParser(
+        prog='pkgtxt2db',
         description='Convert PACKAGES.TXT to DB',
         epilog=
         "i.e. pkgtxt2db -u -t salix -a x86_64 -r 14.0 -c json -o salix64.json")
+
 parser.add_argument('-u', '--update', action="store_true",
         default=False,
         help='Download/update the PACKAGES.TXT file')
+
 parser.add_argument('-t', '--target', action="store",
         dest='target', default='salix',
         help='Choose the O.S.: slackware or salix (default) ')
+
 parser.add_argument('--repo', action="store",
         dest='repo', default='i486',
         help='Choose the arch repo: x86_64 or i486 (default)')
+
 parser.add_argument('-e', '--expa', action="store",
         dest='expa', default='/',
         help='Choose the slackware extra/patches')
+
 parser.add_argument('-r', '--release', action="store",
         dest='release', default='14.0',
         help='Choose the release: 13.0 to 14.0 (default)')
+
 parser.add_argument('-c', '--convert', action="store",
         dest='convert',
         help='Choose the DB format: xml, json, csv')
+
 parser.add_argument('-o', '--output', action="store",
         dest='output', default='packages',
         help='Choose the name of your DB file')
+
+parser.add_argument('--version', action='version',
+        version='%(prog)s ' + my_version)
+
 if len(sys.argv) == 1:
     sys.exit('Wrong usage, see pkgtxt2db --help')
+
 args = parser.parse_args()
 
 # vars
@@ -273,8 +286,6 @@ def mkdadb(towhat):
 
 
 def main():
-    if not sys.argv[1]:
-        sys.exit('Wrong usage, use pkgtxt2db --help')
     if not update and not os.path.isfile(pkgtxt):
             sys.exit('No PACKAGES.TXT found, you should fetch one, aborting.')
     else:
