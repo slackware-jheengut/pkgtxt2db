@@ -104,7 +104,18 @@ def pkgtxturl(repo='i486', target='salix', release='14.0', expa='/'):
     Download the slackware/salix PACKAGES.TXT.gz from a built URL and unzip it.
     pkgtxturl(repo, target, release, |extra|patches)
     """
-    slash = '/'
+
+    # Check the repo
+    Rep = {'i486', 'x86_64'}
+    if repo not in Rep:
+        sys.exit('Choose a valid arch please, aborting.')
+
+    # Check if the choosen release is a valid one.
+    R = {'13.0', '13.1', '13.37', '14.0', 'current'}
+    if release not in R:
+        sys.exit('Choose a valid release please, aborting.')
+
+    # Check the target
     if target == 'slackware':
         target = 'slackware-'
     elif target == 'salix':
@@ -112,11 +123,15 @@ def pkgtxturl(repo='i486', target='salix', release='14.0', expa='/'):
     else:
         sys.exit('Choose a valid target, aborting.')
 
+    #
     if expa == 'extra':
         expa = '/extra/'
     elif expa == 'patches':
         expa = '/patches/'
 
+    slash = '/'
+
+    # Build the URL to fetch PACKAGES.TXT
     url = mirror + repo + slash + target + release + expa + pkgtxtz
 
     # remove old files
@@ -139,6 +154,7 @@ def pkgtxturl(repo='i486', target='salix', release='14.0', expa='/'):
     except urllib2.URLError, e:
         print "URL Error:", e.reason, url
         return False
+
     # unzip it
     fout = open(pkgtxt, 'w')
     with gzip.open(pkgtxtz, 'rb') as f:
