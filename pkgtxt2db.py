@@ -63,6 +63,8 @@ parser.add_argument('-c', '--convert', action="store",
 parser.add_argument('-o', '--output', action="store",
         dest='output', default='packages',
         help='Choose the name of your DB file')
+if len(sys.argv) == 1:
+    sys.exit('Wrong usage, see pkgtxt2db --help')
 args = parser.parse_args()
 
 # vars
