@@ -40,7 +40,8 @@ fields = ['name',
 # Parse the CLI options
 parser = argparse.ArgumentParser(
         description='Convert PACKAGES.TXT to DB',
-        epilog="ie Pkgtxt2db -t salix -a x86_64 -r 14.0 -o json")
+        epilog=
+        "i.e. pkgtxt2db -u -t salix -a x86_64 -r 14.0 -c json -o salix64.json")
 parser.add_argument('-u', '--update', action="store_true",
         default=False,
         help='Download/update the PACKAGES.TXT file')
@@ -83,7 +84,7 @@ def new_pkgdct():
 
 
 # Fetch PACKAGES.TXT
-def pkgtxturl(repo='32', target='salix', release='14.0', expa='/'):
+def pkgtxturl(repo='i486', target='salix', release='14.0', expa='/'):
     """
     Download the slackware/salix PACKAGES.TXT.gz from a built URL and unzip it.
     pkgtxturl(repo, target, release, |extra|patches)
@@ -192,18 +193,24 @@ def mkdadb(towhat):
     if towhat == tocsv:
         if os.path.isfile(outputfile):
             os.remove(outputfile)
-            print 'Updating ', outputfile
+            print outputfile, 'has been updated.'
+        else:
+            print outputfile, 'has been built.'
     if towhat == tojson:
         if os.path.isfile(outputfile):
             os.remove(outputfile)
-            print 'Updating ', outputfile
+            print outputfile, 'has been updated.'
+        else:
+            print outputfile, 'has been built.'
         with open("pre.json", 'w') as j:
                 j.write('{\n')
                 j.write('"packages": [\n')
     if towhat == toxml:
         if os.path.isfile(outputfile):
             os.remove(outputfile)
-            print 'Updating ', outputfile
+            print outputfile, 'has been updated.'
+        else:
+            print outputfile, 'has been built.'
         with open(outputfile, 'w') as xmlf:
                 xmlf.write('<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n')
                 xmlf.write('<packages>\n')
@@ -264,6 +271,8 @@ def mkdadb(towhat):
 
 
 def main():
+    if not sys.argv[1]:
+        sys.exit('Wrong usage, use pkgtxt2db --help')
     if not update and not os.path.isfile(pkgtxt):
             sys.exit('No PACKAGES.TXT found, you should fetch one, aborting.')
     else:
