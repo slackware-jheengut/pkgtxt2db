@@ -54,7 +54,7 @@ COMMAND LINE USAGE
        Here are some usages examples.
 
        pkgtxt2db -u -t slackware --repo x86_64 -r 14.0 -c json -o slack64.json
-              It will fetch and convert PACKAGES.TXT from the Slackware current x86_64 repository to a JSON database: salix64.json.
+              It will fetch and convert PACKAGES.TXT from the Slackware current x86_64 repository to a JSON database: slack64.json.
 
        pkgtxt2db -c csv
               It will convert the PACKAGES.TXT found in your directory to a CSV database (; separated): packages.csv.  You can open it with libreoffice ;)
