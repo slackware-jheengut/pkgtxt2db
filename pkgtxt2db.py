@@ -26,42 +26,33 @@ my_url = 'http://www.salixos.org/wiki/index.php/Pkgtxt2db'
 my_name = 'pkgtxt2db'
 my_version = '0.0'
 
-# initialise the pkg dictionnary with empty values
-fields = ['name',
-             'version',
-             'arch',
-             'release'
-             'location',
-             'deps',
-             'sizec',
-             'sizeu',
-             'slackdesc']
 
 # Parse the CLI options
 parser = argparse.ArgumentParser(
         prog='pkgtxt2db',
         description='Convert PACKAGES.TXT to DB',
         epilog=
-        "i.e. pkgtxt2db -u -t salix -a x86_64 -r 14.0 -c json -o salix64.json")
+        "i.e. pkgtxt2db -u -t salix --repo \
+            x86_64 -r 14.0 -c json -o salix64.json")
 
 parser.add_argument('-u', '--update', action="store_true",
         default=False,
         help='Download/update the PACKAGES.TXT file')
 
 parser.add_argument('-t', '--target', action="store",
-        dest='target', default='salix',
+        dest='target',
         help='Choose the O.S.: slackware or salix (default) ')
 
 parser.add_argument('--repo', action="store",
-        dest='repo', default='i486',
+        dest='repo',
         help='Choose the arch repo: x86_64 or i486 (default)')
 
 parser.add_argument('-e', '--expa', action="store",
-        dest='expa', default='/',
+        dest='expa',
         help='Choose the slackware extra/patches')
 
 parser.add_argument('-r', '--release', action="store",
-        dest='release', default='14.0',
+        dest='release',
         help='Choose the release: 13.0 to 14.0 (default)')
 
 parser.add_argument('-c', '--convert', action="store",
@@ -92,6 +83,18 @@ expa = args.expa
 convert = args.convert
 output = args.output
 outputfile = '.'.join([output, convert])
+
+
+# initialise the pkg dictionnary with empty values
+fields = ['name',
+             'version',
+             'arch',
+             'release'
+             'location',
+             'deps',
+             'sizec',
+             'sizeu',
+             'slackdesc']
 
 
 def new_pkgdct():
@@ -200,15 +203,24 @@ def toxml(pkgDct):
     """
     with open(outputfile, 'a') as xmlf:
         xmlf.write('\t<package>\n')
-        xmlf.write('\t\t<name>' + pkgDct.get("name") + '</name>\n')
-        xmlf.write('\t\t<version>' + pkgDct.get("version") + '</version>\n')
-        xmlf.write('\t\t<arch>' + pkgDct.get("arch") + '</arch>\n')
-        xmlf.write('\t\t<release>' + pkgDct.get("release") + '</release>\n')
-        xmlf.write('\t\t<location>' + pkgDct.get("location") + '</location>\n')
-        xmlf.write('\t\t<deps>' + pkgDct.get("deps") + '</deps>\n')
-        xmlf.write('\t\t<sizec>' + pkgDct.get("sizec") + '</sizec>\n')
-        xmlf.write('\t\t<sizeu>' + pkgDct.get("sizeu") + '</sizeu>\n')
-        xmlf.write('\t\t<slackdesc>' + pkgDct.get("slackdesc") + '</slackdesc>\n')
+        xmlf.write('\t\t<name>'
+            + pkgDct.get("name") + '</name>\n')
+        xmlf.write('\t\t<version>'
+            + pkgDct.get("version") + '</version>\n')
+        xmlf.write('\t\t<arch>'
+            + pkgDct.get("arch") + '</arch>\n')
+        xmlf.write('\t\t<release>'
+            + pkgDct.get("release") + '</release>\n')
+        xmlf.write('\t\t<location>'
+            + pkgDct.get("location") + '</location>\n')
+        xmlf.write('\t\t<deps>'
+            + pkgDct.get("deps") + '</deps>\n')
+        xmlf.write('\t\t<sizec>'
+            + pkgDct.get("sizec") + '</sizec>\n')
+        xmlf.write('\t\t<sizeu>'
+            + pkgDct.get("sizeu") + '</sizeu>\n')
+        xmlf.write('\t\t<slackdesc>'
+            + pkgDct.get("slackdesc") + '</slackdesc>\n')
         xmlf.write('\t</package>\n')
 
 
@@ -303,7 +315,14 @@ def mkdadb(towhat):
 
 def main():
     if not update and not os.path.isfile(pkgtxt):
-            sys.exit('No PACKAGES.TXT found, you should fetch one, aborting.')
+        sys.exit('No PACKAGES.TXT found, you should fetch one, aborting.')
+    elif not update and os.path.isfile(pkgtxt):
+        if repo:
+            sys.exit("The repo variable can't be setup without --update, aborting.")
+        if target:
+            sys.exit("The target variable can't be setup without --update, aborting.")
+        if release:
+            sys.exit("The release variable can't be setup without --update, aborting.")
     else:
         pkgtxturl(repo, target, release, expa)
 
