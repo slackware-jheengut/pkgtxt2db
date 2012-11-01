@@ -1,3 +1,8 @@
+* version 0.2.0
+	- code converted from Perl to Python
+	- add support for the Slackware extra and patches directories
+	- you can choose your output filename
+
 * version 0.1.6
 	- add XML export
 	- clean pkgdesc var with parasite characters < > " &
