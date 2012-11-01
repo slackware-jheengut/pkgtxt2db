@@ -7,9 +7,10 @@ Frederic Galusik
 
 = NAME =
 
-pkgtxt2db - A perl utility to convert the Slackware PACKAGES.TXT to a database.
+pkgtxt2db - A Python utility to convert the Slackware PACKAGES.TXT to a database.
 
 Are supported: CSV, JSON, XML
+
 
 = SYNOPSIS =
 
@@ -18,7 +19,7 @@ Are supported: CSV, JSON, XML
 
 = DESCRIPTION =
 
-**Pkgtxt2db** is a tool for automoatically convert PACKAGES.TXT from this plain text format to a database one like CSV, JSON, XML.
+**Pkgtxt2db** is a tool for automatically convert PACKAGES.TXT from this plain text format to a database one like CSV, JSON, XML.
 
 
 = GENERAL OPTIONS =
@@ -26,44 +27,57 @@ Are supported: CSV, JSON, XML
 : **-h**, **--help**
 Simple help
 
-: **-v**, **--version**
-Print Pkgtxt2db version
 
-: **-c**, **--csv**
-Convert PACKAGES.TXT to a CSV database.
+: **--version**
+Print pkgtxt2db version
 
-: **-j**, **--json**
-Convert PACKAGES.TXT to a JSON database.
 
-: **-x**, **--xml**
-Convert PACKAGES.TXT to a XML database
+: **-u**, **--update**
+It will fetch and download a new PACKAGES.TXT from your choosen repository.
+
 
 : **-t**, **--target**
-Choose between Slackware or Salix repositories.
+Choose between slackware or salix repositories.
 
-It can be:
-- slack32: slackware i486 repository
-- slack64: slackware x86_64 repository
-- salix32: salix i486 repository
-- salix64: salix x86_64 repository
+
+: **--repo**
+Choose the arch repository, it can be i486 or x86_64.
+
 
 : **-r**, **--release**
 Choose the slackware or salix release.
+It can be: current (if exist), 14.0, 13.37, ..., 13.0.
 
-It can be: current (if exist), 13.37, ...
+
+: **-e**, **--expa**
+Choose between the patches or extra Slackware repository.
+
+
+: **-c**, **--convert**
+Choose your database format, it can be:
+- csv : Convert PACKAGES.TXT to a CSV database.
+- json: Convert PACKAGES.TXT to a JSON database.
+- xml : Convert PACKAGES.TXT to a XML database.
+
+
+: **-o**, **--output**
+Choose the name of the output file.
+If none is choosen, //packages// will be used.
 
 
 = COMMAND LINE USAGE =
 Here are some usages examples.
 
-: **pkgtxt2db -c -t slack32 -r current**
-It will fetch and convert PACKAGES.TXT from the Slackware current i486
-repository to a CSV database (tab separated): //slack32-current.csv//.
-You can open it with libreoffice ;)
 
-: **pkgtxt2db -j -t salix64 -r 13.37**
-It will fetch and convert PACKAGES.TXT from the Salix 13.37 x86-64
-repository to a JSON database: //salix64-13.37.json//.
+: **pkgtxt2db -u -t slackware --repo x86_64 -r 14.0 -c json -o slack64.json**
+It will fetch and convert PACKAGES.TXT from the Slackware current x86_64
+repository to a JSON database: //salix64.json//.
+
+
+: **pkgtxt2db -c csv**
+It will convert the PACKAGES.TXT found in your directory to a CSV 
+database (; separated): //packages.csv//.
+You can open it with libreoffice ;)
 
 
 = WEBSITE =
@@ -74,5 +88,3 @@ http://www.salixos.org/wiki/index.php/Pkgtxt2db
 = AUTHOR =
 
 Pkgtxt2db was written by Frederic Galusik <fredg~at~salixos~dot~org>
-
-
