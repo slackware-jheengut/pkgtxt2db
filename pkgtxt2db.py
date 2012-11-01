@@ -24,7 +24,7 @@ import argparse
 # Program information
 my_url = 'http://www.salixos.org/wiki/index.php/Pkgtxt2db'
 my_name = 'pkgtxt2db'
-my_version = '0.0'
+my_version = '0.2.0'
 
 
 # Parse the CLI options
@@ -48,7 +48,7 @@ parser.add_argument('--repo', action="store",
         help='Choose the arch repo: x86_64 or i486 (default)')
 
 parser.add_argument('-e', '--expa', action="store",
-        dest='expa',
+        dest='expa', default='/',
         help='Choose the slackware extra/patches')
 
 parser.add_argument('-r', '--release', action="store",
@@ -318,11 +318,14 @@ def main():
         sys.exit('No PACKAGES.TXT found, you should fetch one, aborting.')
     elif not update and os.path.isfile(pkgtxt):
         if repo:
-            sys.exit("The repo variable can't be setup without --update, aborting.")
+            sys.exit(
+            "The repo variable can't be setup without --update, aborting.")
         if target:
-            sys.exit("The target variable can't be setup without --update, aborting.")
+            sys.exit(
+            "The target variable can't be setup without --update, aborting.")
         if release:
-            sys.exit("The release variable can't be setup without --update, aborting.")
+            sys.exit(
+            "The release variable can't be setup without --update, aborting.")
     else:
         pkgtxturl(repo, target, release, expa)
 
