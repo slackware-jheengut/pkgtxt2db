@@ -9,7 +9,7 @@
 # License: BSD Revised
 #
 # Convert the Slackware/Salix PACKAGES.TXT file to some various database
-# formats : CSV, json, xml
+# formats : CSV, json, SQLite, xml
 #
 
 
