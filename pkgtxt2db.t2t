@@ -9,7 +9,7 @@ Frederic Galusik
 
 pkgtxt2db - A Python utility to convert the Slackware PACKAGES.TXT to a database.
 
-Are supported: CSV, JSON, XML
+Are supported: CSV, JSON, SQLITE and XML
 
 
 = SYNOPSIS =
@@ -19,7 +19,7 @@ Are supported: CSV, JSON, XML
 
 = DESCRIPTION =
 
-**Pkgtxt2db** is a tool for automatically convert PACKAGES.TXT from this plain text format to a database one like CSV, JSON, XML.
+**Pkgtxt2db** is a tool for automatically convert PACKAGES.TXT from this plain text format to a database one like CSV, JSON, SQLite or XML.
 
 
 = GENERAL OPTIONS =
@@ -55,9 +55,10 @@ Choose between the patches or extra Slackware repository.
 
 : **-c**, **--convert**
 Choose your database format, it can be:
-- csv : Convert PACKAGES.TXT to a CSV database.
-- json: Convert PACKAGES.TXT to a JSON database.
-- xml : Convert PACKAGES.TXT to a XML database.
+- csv   : Convert PACKAGES.TXT to a CSV database.
+- json  : Convert PACKAGES.TXT to a JSON database.
+- sqlite: Convert PACKAGES.TXT to a SQLite database.
+- xml   : Convert PACKAGES.TXT to a XML database.
 
 
 : **-o**, **--output**
@@ -88,3 +89,4 @@ http://www.salixos.org/wiki/index.php/Pkgtxt2db
 = AUTHOR =
 
 Pkgtxt2db was written by Frederic Galusik <fredg~at~salixos~dot~org>
+
