@@ -42,23 +42,23 @@ parser.add_argument('-u', '--update', action="store_true",
 
 parser.add_argument('-t', '--target', action="store",
         dest='target',
-        help='Choose the O.S.: slackware or salix (default) ')
+        help='Choose the O.S.: slackware or salix')
 
 parser.add_argument('--repo', action="store",
         dest='repo',
-        help='Choose the arch repo: x86_64 or i486 (default)')
+        help='Choose the arch repo: x86_64 or i486')
 
 parser.add_argument('-e', '--expa', action="store",
         dest='expa', default='/',
-        help='Choose the slackware extra/patches')
+        help='Choose the slackware extra/patches repository')
 
 parser.add_argument('-r', '--release', action="store",
         dest='release',
-        help='Choose the release: 13.0 to 14.0 (default)')
+        help='Choose the release: 13.0 to 14.0')
 
 parser.add_argument('-c', '--convert', action="store",
         dest='convert', default='csv',
-        help='Choose the DB format: xml, json, csv, sqlite')
+        help='Choose the DB format: csv, json, sqlite, xml')
 
 parser.add_argument('-o', '--output', action="store",
         dest='output', default='packages',
@@ -253,16 +253,17 @@ def mkdadb(towhat):
     """
     Parse PACKAGES.TXT to get the values we need.
     Choose the export format:
-        - CSV  : tocsv
-        - JSON : tojson
-        - XML  : toxml
+        - CSV    : tocsv
+        - JSON   : tojson
+        - SQLite : tosqlite
+        - XML    : toxml
     """
     # delete old file DB
     if os.path.isfile(outputfile):
         os.remove(outputfile)
-        print outputfile, 'has been updated.'
+        print outputfile, 'is being updated.'
     else:
-        print outputfile, 'has been built.'
+        print outputfile, 'is being built.'
     if towhat == tojson:
         with open("pre.json", 'w') as j:
                 j.write('{\n')
@@ -337,6 +338,7 @@ def mkdadb(towhat):
             xmlf.write('</packages>\n')
     if towhat == tosqlite:
         conn.close()
+    print 'Done.'
 
 
 def main():
