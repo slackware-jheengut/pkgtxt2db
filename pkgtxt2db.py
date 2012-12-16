@@ -25,7 +25,7 @@ import sqlite3
 # Program information
 my_url = 'http://www.salixos.org/wiki/index.php/Pkgtxt2db'
 my_name = 'pkgtxt2db'
-my_version = '0.2.0'
+my_version = '0.2.1'
 
 
 # Parse the CLI options
