@@ -1,3 +1,7 @@
+* version 0.2.1
+	- some code cleanup
+	- add SQLite support
+
 * version 0.2.0
 	- code converted from Perl to Python
 	- add support for the Slackware extra and patches directories
