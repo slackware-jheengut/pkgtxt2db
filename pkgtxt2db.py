@@ -19,6 +19,7 @@ import urllib2
 import gzip
 import re
 import argparse
+import sqlite3
 
 
 # Program information
@@ -56,8 +57,8 @@ parser.add_argument('-r', '--release', action="store",
         help='Choose the release: 13.0 to 14.0 (default)')
 
 parser.add_argument('-c', '--convert', action="store",
-        dest='convert',
-        help='Choose the DB format: xml, json, csv')
+        dest='convert', default='csv',
+        help='Choose the DB format: xml, json, csv, sqlite')
 
 parser.add_argument('-o', '--output', action="store",
         dest='output', default='packages',
@@ -224,6 +225,29 @@ def toxml(pkgDct):
         xmlf.write('\t</package>\n')
 
 
+# to SQLite DB
+def tosqlite(pkgDct):
+    """
+    Export PACKAGES.TXT to a SQLite database.
+    """
+    conn = sqlite3.connect(outputfile)
+    # fix sqlite3.ProgrammingError You must not use 8-bit bytestrings unless
+    # you use a text_factory that can interpret 8-bit bytestrings
+    # (like text_factory = str).
+    conn.text_factory = lambda x: unicode(x, 'utf-8', 'ignore')
+    cursor = conn.cursor()
+    # insert data
+    cursor.execute("""INSERT INTO pkgtable (name , version , arch, release,
+       location, deps, sizec, sizeu, slackdesc) VALUES (?, ?,
+       ?, ?, ?, ?, ?, ?, ?)""", (pkgDct.get("name"),
+       pkgDct.get("version"), pkgDct.get("arch"),
+       pkgDct.get("release"), pkgDct.get("location"),
+       pkgDct.get("deps"), pkgDct.get("sizec"),
+       pkgDct.get("sizeu"), pkgDct.get("slackdesc")))
+    # save data to database
+    conn.commit()
+
+
 # parser
 def mkdadb(towhat):
     """
@@ -233,30 +257,30 @@ def mkdadb(towhat):
         - JSON : tojson
         - XML  : toxml
     """
-    if towhat == tocsv:
-        if os.path.isfile(outputfile):
-            os.remove(outputfile)
-            print outputfile, 'has been updated.'
-        else:
-            print outputfile, 'has been built.'
+    # delete old file DB
+    if os.path.isfile(outputfile):
+        os.remove(outputfile)
+        print outputfile, 'has been updated.'
+    else:
+        print outputfile, 'has been built.'
     if towhat == tojson:
-        if os.path.isfile(outputfile):
-            os.remove(outputfile)
-            print outputfile, 'has been updated.'
-        else:
-            print outputfile, 'has been built.'
         with open("pre.json", 'w') as j:
                 j.write('{\n')
                 j.write('"packages": [\n')
     if towhat == toxml:
-        if os.path.isfile(outputfile):
-            os.remove(outputfile)
-            print outputfile, 'has been updated.'
-        else:
-            print outputfile, 'has been built.'
         with open(outputfile, 'w') as xmlf:
                 xmlf.write('<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n')
                 xmlf.write('<packages>\n')
+    if towhat == tosqlite:
+        # create the DB
+        conn = sqlite3.connect(outputfile)
+        cursor = conn.cursor()
+
+        # create a table
+        cursor.execute("""CREATE TABLE pkgtable
+            (name TEXT, version TEXT, arch TEXT, release TEXT,
+            location TEXT, deps TEXT, sizec TEXT, sizeu TEXT,
+            slackdesc TEXT)""")
     pkg = new_pkgdct()
     with open('PACKAGES.TXT') as f:
         for line in f:
@@ -311,6 +335,8 @@ def mkdadb(towhat):
     if towhat == toxml:
         with open(outputfile, 'a') as xmlf:
             xmlf.write('</packages>\n')
+    if towhat == tosqlite:
+        conn.close()
 
 
 def main():
@@ -335,6 +361,8 @@ def main():
         mkdadb(tojson)
     elif convert == 'xml':
         mkdadb(toxml)
+    elif convert == 'sqlite':
+        mkdadb(tosqlite)
     else:
         sys.exit('You have to choose a valid database format, aborting.')
 
