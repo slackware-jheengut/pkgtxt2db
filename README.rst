@@ -16,14 +16,12 @@ Download:
 ---------
 Sources tarballs and Slackware packages can be found there:
 
-`http://people.salixos.org/fredg/packages/Pkgtxt2db/`_
+http://people.salixos.org/fredg/packages/Pkgtxt2db/
 
 GIT:
 ----
 git clone ssh://git@github.com/fredg/pkgtxt2db.git
 
-
-------------------------------------------------------------------
 
 GENERAL OPTIONS
 ---------------
