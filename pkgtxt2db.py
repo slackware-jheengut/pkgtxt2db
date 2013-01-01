@@ -85,22 +85,58 @@ convert = args.convert
 output = args.output
 outputfile = '.'.join([output, convert])
 
-
-# initialise the pkg dictionnary with empty values
-fields = ['name',
-             'version',
-             'arch',
-             'release'
-             'location',
-             'deps',
-             'sizec',
-             'sizeu',
-             'slackdesc']
+PACKAGETXT = 'PACKAGES.TXT'
 
 
-def new_pkgdct():
-    return dict(zip(fields, ['', ] * len(fields)))
+class Package:
+    """
+    Detailed pkg
+    """
+    def __init__(self, PACKAGETXT):
+        self.PACKAGETXT = PACKAGETXT
+        with open(PACKAGETXT) as self.f:
+            for line in self.f:
+                pkgline = re.match(
+                    r'(PACKAGE NAME:\s\s)(.*)', line)
+                locationline = re.match(
+                    r'(PACKAGE LOCATION:\s\s\.)(.*)', line)
+                depline = re.match(
+                    r'(PACKAGE REQUIRED:\s\s)(.*)', line)
+                sizecline = re.match(
+                    r'(PACKAGE\sSIZE\s\(compressed\):\s\s)(.*)', line)
+                sizeuline = re.match(
+                    r'(PACKAGE\sSIZE\s\(uncompressed\):\s\s)(.*)', line)
+                slackdescline = re.match(
+                    r'(%s:\s)(.*)' % self.name.replace('+', '\+'), line)
+                emptyline = re.match(
+                    r'^$', line)
+                if pkgline:
+                    pname = pkgline.group(2)
+                    pname = re.match(
+                        r'(.*)-([^-]*)-([^-]*)-([^-]*).t[glx]z$', pname)
+                    self.name = pname.group(1)
+                    self.version = pname.group(2)
+                    self.arch = pname.group(3)
+                    self.release = pname.group(4)
+                if depline:
+                    self.deps = depline.group(2)
+                if locationline:
+                    self.location = locationline.group(2)
+                if sizecline:
+                    self.sizec = sizecline.group(2)
+                if sizeuline:
+                    self.sizeu = sizeuline.group(2)
+                if slackdescline:
+                    self.slackdesc += " " + slackdescline.group(2).\
+                        replace('"', '\'').\
+                        replace('&', 'and').\
+                        replace('>', '').\
+                        replace('<', '')
+                if emptyline and self.name:
+                    self.slackdesc = self.slackdesc.strip()
 
+def plop():
+    print Package.version
 
 # Fetch PACKAGES.TXT
 def pkgtxturl(repo='i486', target='salix', release='14.0', expa='/'):
@@ -168,15 +204,14 @@ def pkgtxturl(repo='i486', target='salix', release='14.0', expa='/'):
 
 
 # to CSV DB
-def tocsv(pkgDct, sep=";"):
+def tocsv(pkgname, sep=";"):
     """
     Export PACKAGES.TXT to a CSV database format.
     The separated string can be choosen with the sep var, default is ;
     """
     with open(outputfile, 'a') as csvf:
-        csvf.write(
-            sep.join(map(lambda field: pkgDct.get(field, ''), fields)) + '\n')
-
+        for elt in pkgname:
+            csvh.write(elt,sep)
 
 # to JSON DB
 def tojson(pkgDct):
@@ -282,9 +317,10 @@ def mkdadb(towhat):
             (name TEXT, version TEXT, arch TEXT, release TEXT,
             location TEXT, deps TEXT, sizec TEXT, sizeu TEXT,
             slackdesc TEXT)""")
-    pkg = new_pkgdct()
+    #pkg = Package()
     with open('PACKAGES.TXT') as f:
         for line in f:
+            pkgname = Package()
             pkgline = re.match(
                 r'(PACKAGE NAME:\s\s)(.*)', line)
             locationline = re.match(
@@ -296,35 +332,37 @@ def mkdadb(towhat):
             sizeuline = re.match(
                 r'(PACKAGE\sSIZE\s\(uncompressed\):\s\s)(.*)', line)
             slackdescline = re.match(
-                r'(%s:\s)(.*)' % pkg["name"].replace('+', '\+'), line)
+                r'(%s:\s)(.*)' % Package.name.replace('+', '\+'), line)
             emptyline = re.match(
                 r'^$', line)
             if pkgline:
                 pname = pkgline.group(2)
                 pname = re.match(
                     r'(.*)-([^-]*)-([^-]*)-([^-]*).t[glx]z$', pname)
-                pkg["name"] = pname.group(1)
-                pkg["version"] = pname.group(2)
-                pkg["arch"] = pname.group(3)
-                pkg["release"] = pname.group(4)
+                pkgname = pname.group(1)
+                #pkgname = Package() 
+                Package.name = pname.group(1)
+                Package.version = pname.group(2)
+                Package.arch = pname.group(3)
+                Package.release = pname.group(4)
             if depline:
-                pkg["deps"] = depline.group(2)
+                Package.deps = depline.group(2)
             if locationline:
-                pkg["location"] = locationline.group(2)
+                Package.location = locationline.group(2)
             if sizecline:
-                pkg["sizec"] = sizecline.group(2)
+                Package.sizec = sizecline.group(2)
             if sizeuline:
-                pkg["sizeu"] = sizeuline.group(2)
+                Package.sizeu = sizeuline.group(2)
             if slackdescline:
-                pkg["slackdesc"] += " " + slackdescline.group(2).\
+                Package.slackdesc += " " + slackdescline.group(2).\
                     replace('"', '\'').\
                     replace('&', 'and').\
                     replace('>', '').\
                     replace('<', '')
-            if emptyline and pkg.get("name"):
-                pkg["slackdesc"] = pkg["slackdesc"].strip()
-                towhat(pkg)
-                pkg = new_pkgdct()
+            if emptyline and Package.name:
+                Package.slackdesc = Package.slackdesc.strip()
+                towhat(pkgname)
+                pkgname = Package()
     if towhat == tojson:
         with open("pre.json", 'r') as j, open(outputfile, "w") as jsonf:
             alllines = j.readlines()
@@ -357,16 +395,18 @@ def main():
     else:
         pkgtxturl(repo, target, release, expa)
 
-    if convert == 'csv':
-        mkdadb(tocsv)
-    elif convert == 'json':
-        mkdadb(tojson)
-    elif convert == 'xml':
-        mkdadb(toxml)
-    elif convert == 'sqlite':
-        mkdadb(tosqlite)
-    else:
-        sys.exit('You have to choose a valid database format, aborting.')
+    # if convert == 'csv':
+    #     mkdadb(tocsv)
+    # elif convert == 'json':
+    #     mkdadb(tojson)
+    # elif convert == 'xml':
+    #     mkdadb(toxml)
+    # elif convert == 'sqlite':
+    #     mkdadb(tosqlite)
+    # else:
+    #     sys.exit('You have to choose a valid database format, aborting.')
+
+    plop()
 
 
 if __name__ == '__main__':
