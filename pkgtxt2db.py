@@ -12,7 +12,6 @@
 # formats : CSV, json, SQLite, xml
 #
 
-
 import os
 import sys
 import urllib2
@@ -20,13 +19,12 @@ import gzip
 import re
 import argparse
 import sqlite3
-
+from ParsePkgtxt import Package
 
 # Program information
 my_url = 'http://www.salixos.org/wiki/index.php/Pkgtxt2db'
 my_name = 'pkgtxt2db'
-my_version = '0.2.1'
-
+my_version = '0.2.2'
 
 # Parse the CLI options
 parser = argparse.ArgumentParser(
@@ -34,7 +32,7 @@ parser = argparse.ArgumentParser(
         description='Convert PACKAGES.TXT to DB',
         epilog=
         "i.e. pkgtxt2db -u -t salix --repo \
-            x86_64 -r 14.0 -c json -o salix64.json")
+            x86_64 -r 14.0 -c json -o salix64")
 
 parser.add_argument('-u', '--update', action="store_true",
         default=False,
@@ -73,7 +71,8 @@ if len(sys.argv) == 1:
 args = parser.parse_args()
 
 # vars
-mirror = 'http://salix.enialis.net/'
+#mirror = 'http://salix.enialis.net/'
+mirror = 'http://download.salixos.org/'
 pkgtxtz = 'PACKAGES.TXT.gz'
 pkgtxt = 'PACKAGES.TXT'
 update = args.update
@@ -84,61 +83,17 @@ expa = args.expa
 convert = args.convert
 output = args.output
 outputfile = '.'.join([output, convert])
+tmpfile = '/tmp/' + outputfile
 
 PACKAGETXT = 'PACKAGES.TXT'
 
-
-class Package:
+def pkgdic():
     """
-    Detailed pkg
+    Build the dictionnary from PACKAGES.TXT
     """
-    def __init__(self, PACKAGETXT):
-        self.PACKAGETXT = PACKAGETXT
-        with open(PACKAGETXT) as self.f:
-            for line in self.f:
-                pkgline = re.match(
-                    r'(PACKAGE NAME:\s\s)(.*)', line)
-                locationline = re.match(
-                    r'(PACKAGE LOCATION:\s\s\.)(.*)', line)
-                depline = re.match(
-                    r'(PACKAGE REQUIRED:\s\s)(.*)', line)
-                sizecline = re.match(
-                    r'(PACKAGE\sSIZE\s\(compressed\):\s\s)(.*)', line)
-                sizeuline = re.match(
-                    r'(PACKAGE\sSIZE\s\(uncompressed\):\s\s)(.*)', line)
-                slackdescline = re.match(
-                    r'(%s:\s)(.*)' % self.name.replace('+', '\+'), line)
-                emptyline = re.match(
-                    r'^$', line)
-                if pkgline:
-                    pname = pkgline.group(2)
-                    pname = re.match(
-                        r'(.*)-([^-]*)-([^-]*)-([^-]*).t[glx]z$', pname)
-                    self.name = pname.group(1)
-                    self.version = pname.group(2)
-                    self.arch = pname.group(3)
-                    self.release = pname.group(4)
-                if depline:
-                    self.deps = depline.group(2)
-                if locationline:
-                    self.location = locationline.group(2)
-                if sizecline:
-                    self.sizec = sizecline.group(2)
-                if sizeuline:
-                    self.sizeu = sizeuline.group(2)
-                if slackdescline:
-                    self.slackdesc += " " + slackdescline.group(2).\
-                        replace('"', '\'').\
-                        replace('&', 'and').\
-                        replace('>', '').\
-                        replace('<', '')
-                if emptyline and self.name:
-                    self.slackdesc = self.slackdesc.strip()
+    return Package.parse(Package(), PACKAGETXT)
 
-def plop():
-    print Package.version
 
-# Fetch PACKAGES.TXT
 def pkgtxturl(repo='i486', target='salix', release='14.0', expa='/'):
     """
     Download the slackware/salix PACKAGES.TXT.gz from a built URL and unzip it.
@@ -204,67 +159,91 @@ def pkgtxturl(repo='i486', target='salix', release='14.0', expa='/'):
 
 
 # to CSV DB
-def tocsv(pkgname, sep=";"):
+def tocsv(sep=";"):
     """
     Export PACKAGES.TXT to a CSV database format.
     The separated string can be choosen with the sep var, default is ;
     """
-    with open(outputfile, 'a') as csvf:
-        for elt in pkgname:
-            csvh.write(elt,sep)
+    with open(outputfile, 'w') as csvf:
+        for k, v in pkgdic().iteritems():
+            csvf.write(sep.join([
+                        k,v[0],v[1],v[2],v[3],v[4],v[5],v[6],v[7],v[8],v[9]
+                        ]) + '\n')
 
 # to JSON DB
-def tojson(pkgDct):
+def tojson():
     """
     Export PACKAGES.TXT to a JSON database format
     """
-    with open("pre.json", 'a') as j:
-        j.write('  {\n')
-        j.write('    \"name\": \"' + pkgDct.get("name") + '\",\n')
-        j.write('    \"version\": \"' + pkgDct.get("version") + '\",\n')
-        j.write('    \"arch\": \"' + pkgDct.get("arch") + '\",\n')
-        j.write('    \"release\": \"' + pkgDct.get("release") + '\",\n')
-        j.write('    \"location\": \"' + pkgDct.get("location") + '\",\n')
-        j.write('    \"deps\": \"' + pkgDct.get("deps") + '\",\n')
-        j.write('    \"sizec\": \"' + pkgDct.get("sizec") + '\",\n')
-        j.write('    \"sizeu\": \"' + pkgDct.get("sizeu") + '\",\n')
-        j.write('    \"slackdesc\": \"' + pkgDct.get("slackdesc") + '\"\n')
-        j.write('  },\n')
-
+    with open(tmpfile, 'w') as j:
+        j.write('{\n')
+        j.write('"packages": [\n')
+        for k, v in sorted(pkgdic().items()):                
+            j.write('  {\n')
+            j.write('    \"name\": \"' + k + '\",\n')
+            j.write('    \"version\": \"' + v[0] + '\",\n')
+            j.write('    \"arch\": \"' + v[1] + '\",\n')
+            j.write('    \"release\": \"' + v[2] + '\",\n')
+            j.write('    \"deps\": \"' + v[3] + '\",\n')
+            j.write('    \"cons\": \"' + v[4] + '\",\n')
+            j.write('    \"sugs\": \"' + v[5] + '\",\n')
+            j.write('    \"location\": \"' + v[6] + '\",\n')
+            j.write('    \"sizec\": \"' + v[7] + '\",\n')
+            j.write('    \"sizeu\": \"' + v[8] + '\",\n')
+            j.write('    \"slackdesc\": \"' + v[9] + '\"\n')
+            j.write('  },\n')
+    with open(tmpfile, 'r') as j, open(outputfile, "w") as jsonf:
+        alllines = j.readlines()
+        alllines[-1] = alllines[-1].replace('},', '}')
+        jsonf.writelines(alllines)
+        jsonf.write(']\n')
+        jsonf.write('}\n')
+        os.remove(tmpfile)
 
 # to XML DB
-def toxml(pkgDct):
+def toxml():
     """
     Export PACKAGES.TXT to a XML database format.
     """
-    with open(outputfile, 'a') as xmlf:
-        xmlf.write('\t<package>\n')
-        xmlf.write('\t\t<name>'
-            + pkgDct.get("name") + '</name>\n')
-        xmlf.write('\t\t<version>'
-            + pkgDct.get("version") + '</version>\n')
-        xmlf.write('\t\t<arch>'
-            + pkgDct.get("arch") + '</arch>\n')
-        xmlf.write('\t\t<release>'
-            + pkgDct.get("release") + '</release>\n')
-        xmlf.write('\t\t<location>'
-            + pkgDct.get("location") + '</location>\n')
-        xmlf.write('\t\t<deps>'
-            + pkgDct.get("deps") + '</deps>\n')
-        xmlf.write('\t\t<sizec>'
-            + pkgDct.get("sizec") + '</sizec>\n')
-        xmlf.write('\t\t<sizeu>'
-            + pkgDct.get("sizeu") + '</sizeu>\n')
-        xmlf.write('\t\t<slackdesc>'
-            + pkgDct.get("slackdesc") + '</slackdesc>\n')
-        xmlf.write('\t</package>\n')
-
+    with open(outputfile, 'w') as xmlf:
+        xmlf.write('<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n')
+        xmlf.write('<packages>\n')
+        for k, v in sorted(pkgdic().iteritems()):
+            xmlf.write('\t<package>\n')
+            xmlf.write('\t\t<name>' + k + '</name>\n')
+            xmlf.write('\t\t<version>' + v[0] + '</version>\n')
+            xmlf.write('\t\t<arch>' + v[1] + '</arch>\n')
+            xmlf.write('\t\t<release>' + v[2] + '</release>\n')
+            xmlf.write('\t\t<deps>' + v[3] + '</deps>\n')
+            xmlf.write('\t\t<cons>' + v[4] + '</cons>\n')
+            xmlf.write('\t\t<sugs>' + v[5] + '</sugs>\n')
+            xmlf.write('\t\t<location>' + v[6] + '</location>\n')
+            xmlf.write('\t\t<sizec>' + v[7] + '</sizec>\n')
+            xmlf.write('\t\t<sizeu>' + v[8] + '</sizeu>\n')
+            xmlf.write('\t\t<slackdesc>' + v[9] + '</slackdesc>\n')
+            xmlf.write('\t</package>\n')
+        xmlf.write('</packages>\n')
 
 # to SQLite DB
-def tosqlite(pkgDct):
+def tosqlite():
     """
     Export PACKAGES.TXT to a SQLite database.
     """
+    # We initialize the con variable to None. In case we could not create a connection 
+    # to the database (for example the disk is full), we would not have a connection 
+    # variable defined. This would lead to an error in the finally clause.     
+    conn = None
+    # create the DB
+    conn = sqlite3.connect(outputfile)
+    cursor = conn.cursor()
+
+    # create a table
+    cursor.execute(
+"""
+CREATE TABLE pkgtable
+(name TEXT, version TEXT, arch TEXT, release TEXT, deps TEXT, cons TEXT, 
+sugs TEXT, location TEXT, sizec TEXT, sizeu TEXT, slackdesc TEXT)
+""")
     conn = sqlite3.connect(outputfile)
     # fix sqlite3.ProgrammingError You must not use 8-bit bytestrings unless
     # you use a text_factory that can interpret 8-bit bytestrings
@@ -272,112 +251,14 @@ def tosqlite(pkgDct):
     conn.text_factory = lambda x: unicode(x, 'utf-8', 'ignore')
     cursor = conn.cursor()
     # insert data
-    cursor.execute("""INSERT INTO pkgtable (name , version , arch, release,
-       location, deps, sizec, sizeu, slackdesc) VALUES (?, ?,
-       ?, ?, ?, ?, ?, ?, ?)""", (pkgDct.get("name"),
-       pkgDct.get("version"), pkgDct.get("arch"),
-       pkgDct.get("release"), pkgDct.get("location"),
-       pkgDct.get("deps"), pkgDct.get("sizec"),
-       pkgDct.get("sizeu"), pkgDct.get("slackdesc")))
+    for k, v in sorted(pkgdic().iteritems()):
+        cursor.execute("""INSERT INTO pkgtable (
+name , version , arch, release, deps, cons, sugs, location, sizec, sizeu, 
+slackdesc) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", 
+        [k, v[0], v[1], v[2], v[3], v[4], v[5], v[6], v[7], v[8], v[9]])
     # save data to database
     conn.commit()
-
-
-# parser
-def mkdadb(towhat):
-    """
-    Parse PACKAGES.TXT to get the values we need.
-    Choose the export format:
-        - CSV    : tocsv
-        - JSON   : tojson
-        - SQLite : tosqlite
-        - XML    : toxml
-    """
-    # delete old file DB
-    if os.path.isfile(outputfile):
-        os.remove(outputfile)
-        print outputfile, 'is being updated.'
-    else:
-        print outputfile, 'is being built.'
-    if towhat == tojson:
-        with open("pre.json", 'w') as j:
-                j.write('{\n')
-                j.write('"packages": [\n')
-    if towhat == toxml:
-        with open(outputfile, 'w') as xmlf:
-                xmlf.write('<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n')
-                xmlf.write('<packages>\n')
-    if towhat == tosqlite:
-        # create the DB
-        conn = sqlite3.connect(outputfile)
-        cursor = conn.cursor()
-
-        # create a table
-        cursor.execute("""CREATE TABLE pkgtable
-            (name TEXT, version TEXT, arch TEXT, release TEXT,
-            location TEXT, deps TEXT, sizec TEXT, sizeu TEXT,
-            slackdesc TEXT)""")
-    #pkg = Package()
-    with open('PACKAGES.TXT') as f:
-        for line in f:
-            pkgname = Package()
-            pkgline = re.match(
-                r'(PACKAGE NAME:\s\s)(.*)', line)
-            locationline = re.match(
-                r'(PACKAGE LOCATION:\s\s\.)(.*)', line)
-            depline = re.match(
-                r'(PACKAGE REQUIRED:\s\s)(.*)', line)
-            sizecline = re.match(
-                r'(PACKAGE\sSIZE\s\(compressed\):\s\s)(.*)', line)
-            sizeuline = re.match(
-                r'(PACKAGE\sSIZE\s\(uncompressed\):\s\s)(.*)', line)
-            slackdescline = re.match(
-                r'(%s:\s)(.*)' % Package.name.replace('+', '\+'), line)
-            emptyline = re.match(
-                r'^$', line)
-            if pkgline:
-                pname = pkgline.group(2)
-                pname = re.match(
-                    r'(.*)-([^-]*)-([^-]*)-([^-]*).t[glx]z$', pname)
-                pkgname = pname.group(1)
-                #pkgname = Package() 
-                Package.name = pname.group(1)
-                Package.version = pname.group(2)
-                Package.arch = pname.group(3)
-                Package.release = pname.group(4)
-            if depline:
-                Package.deps = depline.group(2)
-            if locationline:
-                Package.location = locationline.group(2)
-            if sizecline:
-                Package.sizec = sizecline.group(2)
-            if sizeuline:
-                Package.sizeu = sizeuline.group(2)
-            if slackdescline:
-                Package.slackdesc += " " + slackdescline.group(2).\
-                    replace('"', '\'').\
-                    replace('&', 'and').\
-                    replace('>', '').\
-                    replace('<', '')
-            if emptyline and Package.name:
-                Package.slackdesc = Package.slackdesc.strip()
-                towhat(pkgname)
-                pkgname = Package()
-    if towhat == tojson:
-        with open("pre.json", 'r') as j, open(outputfile, "w") as jsonf:
-            alllines = j.readlines()
-            alllines[-1] = alllines[-1].replace('},', '}')
-            jsonf.writelines(alllines)
-            jsonf.write(']\n')
-            jsonf.write('}\n')
-            os.remove("pre.json")
-    if towhat == toxml:
-        with open(outputfile, 'a') as xmlf:
-            xmlf.write('</packages>\n')
-    if towhat == tosqlite:
-        conn.close()
-    print 'Done.'
-
+    conn.close()
 
 def main():
     if not update and not os.path.isfile(pkgtxt):
@@ -395,19 +276,24 @@ def main():
     else:
         pkgtxturl(repo, target, release, expa)
 
-    # if convert == 'csv':
-    #     mkdadb(tocsv)
-    # elif convert == 'json':
-    #     mkdadb(tojson)
-    # elif convert == 'xml':
-    #     mkdadb(toxml)
-    # elif convert == 'sqlite':
-    #     mkdadb(tosqlite)
-    # else:
-    #     sys.exit('You have to choose a valid database format, aborting.')
+    # ALWAYS delete old files
+    if os.path.isfile(outputfile):
+        os.remove(outputfile)
+        print outputfile, 'is being updated.'
+    else:
+        print outputfile, 'is being built.'
 
-    plop()
-
+    # Check ARGVS
+    if convert == 'csv':
+        tocsv()
+    elif convert == 'json':
+        tojson()
+    elif convert == 'xml':
+        toxml()
+    elif convert == 'sqlite':
+        tosqlite()
+    else:
+        sys.exit('You have to choose a valid database format, aborting.')
 
 if __name__ == '__main__':
     main()
