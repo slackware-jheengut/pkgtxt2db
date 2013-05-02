@@ -11,6 +11,8 @@ Are supported:
 * SQLITE
 * XML
 
+It relies on the ParsePkgtxt Python Class:
+https://github.com/fredg/ParsePkgtxt
 
 Download:
 ---------
