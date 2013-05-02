@@ -70,9 +70,8 @@ If none is choosen, //packages// will be used.
 Here are some usages examples.
 
 
-: **pkgtxt2db -u -t slackware --repo x86_64 -r 14.0 -c json -o slack64.json**
-It will fetch and convert PACKAGES.TXT from the Slackware current x86_64
-repository to a JSON database: //salix64.json//.
+: **pkgtxt2db -u -t slackware --repo x86_64 -r 14.0 -c json -o slackware64**
+It will fetch and convert PACKAGES.TXT from the Slackware64 14.0 repository to a JSON database: //slackware64.json//.
 
 
 : **pkgtxt2db -c csv**

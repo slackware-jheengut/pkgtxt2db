@@ -1,3 +1,8 @@
+* version 0.2.2
+	- CSV bugs fixes
+	- Add missing values (suggested deps and conflicted pkgs)
+	- Rewritten to use the ParsePkgtxt Class
+
 * version 0.2.1
 	- some code cleanup
 	- add SQLite support
@@ -17,12 +22,15 @@
 	- remove garbages from the Slackware DB output
 	- fix pkgdesc to be one-line var
 	- added output examples in /examples
+
 * version 0.1.2
-    - code cleanup
+	- code cleanup
 	- options are now human readable
 	- man page added
+
 * version 0.1.1
 	- add pkgdesc var (package description) to JSON DB
+
 * version 0.1
 	- first try
 	- Convert Salix and Slackware PACKAGES.TXT files to CSV and JSON DB.
