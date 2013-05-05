@@ -24,7 +24,7 @@ from ParsePkgtxt import Package
 # Program information
 my_url = 'http://www.salixos.org/wiki/index.php/Pkgtxt2db'
 my_name = 'pkgtxt2db'
-my_version = '0.2.2'
+my_version = '0.2.2.1'
 
 # Parse the CLI options
 parser = argparse.ArgumentParser(
@@ -41,6 +41,10 @@ parser.add_argument('-u', '--update', action="store_true",
 parser.add_argument('-t', '--target', action="store",
         dest='target',
         help='Choose the O.S.: slackware or salix')
+
+parser.add_argument('-a', '--allrepo', action="store_true",
+        default=False,
+        help='Choose the main slackware repo + extra + patches')
 
 parser.add_argument('--repo', action="store",
         dest='repo',
@@ -76,6 +80,7 @@ mirror = 'http://download.salixos.org/'
 pkgtxtz = 'PACKAGES.TXT.gz'
 pkgtxt = 'PACKAGES.TXT'
 update = args.update
+allrepo = args.allrepo
 target = args.target
 repo = args.repo
 release = args.release
@@ -128,14 +133,10 @@ def pkgtxturl(repo='i486', target='salix', release='14.0', expa='/'):
 
     # Build the URL to fetch PACKAGES.TXT
     url = mirror + repo + slash + target + release + expa + pkgtxtz
-
-    # remove old files
+    # remove pkgtxtz
     if os.path.isfile(pkgtxtz):
         os.remove(pkgtxtz)
         print "Remove old ", pkgtxtz
-    if os.path.isfile(pkgtxt):
-        os.remove(pkgtxt)
-        print "Remove old ", pkgtxt
     try:
         f = urllib2.urlopen(url)
         print "Fetching ", url
@@ -151,7 +152,7 @@ def pkgtxturl(repo='i486', target='salix', release='14.0', expa='/'):
         return False
 
     # unzip it
-    fout = open(pkgtxt, 'w')
+    fout = open(pkgtxt, 'a')
     with gzip.open(pkgtxtz, 'rb') as f:
         for line in f:
             fout.write(line)
@@ -260,6 +261,20 @@ slackdesc) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
     conn.commit()
     conn.close()
 
+def clean_pkgtxt():
+    # remove old PACKAGES.TXT
+    if os.path.isfile(pkgtxt):
+        os.remove(pkgtxt)
+        print "Remove old ", pkgtxt
+
+def clean_outputfile():
+    # Delete old files
+    if os.path.isfile(outputfile):
+        os.remove(outputfile)
+        print outputfile, 'is being updated.'
+    else:
+        print outputfile, 'is being built.'
+
 def main():
     if not update and not os.path.isfile(pkgtxt):
         sys.exit('No PACKAGES.TXT found, you should fetch one, aborting.')
@@ -273,15 +288,19 @@ def main():
         if release:
             sys.exit(
             "The release variable can't be setup without --update, aborting.")
+    elif allrepo and target == 'salix':
+        sys.exit(
+            "The allrepo variable is useless with the salix one, aborting.")
+    elif allrepo:
+        clean_pkgtxt()
+        pkgtxturl(repo, target, release, expa)
+        pkgtxturl(repo, target, release, expa='/extra/')
+        pkgtxturl(repo, target, release, expa='/patches/')
     else:
+        clean_pkgtxt()
         pkgtxturl(repo, target, release, expa)
 
-    # ALWAYS delete old files
-    if os.path.isfile(outputfile):
-        os.remove(outputfile)
-        print outputfile, 'is being updated.'
-    else:
-        print outputfile, 'is being built.'
+    clean_outputfile()
 
     # Check ARGVS
     if convert == 'csv':
